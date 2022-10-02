@@ -1,0 +1,106 @@
+{
+	// See https://go.microsoft.com/fwlink/?LinkId=733558
+	// for the documentation about the tasks.json format
+	"version": "2.0.0",
+	"tasks": [
+
+		{
+			"label": "Build TMC app",
+			"detail": "Builds TMC app",
+			"type": "shell",
+			"group": "build",
+			"command": "west",
+			"args": [
+				"build",
+				"-p", "always",
+				"-b", "nucleo_f103rb",
+				"-d", "${workspaceFolder}/application-tmc/build",
+				"${workspaceFolder}/application-tmc"
+			]
+		},
+		{
+			"label": "Build TMC UART app",
+			"detail": "Builds TMC UART app",
+			"type": "shell",
+			"group": "build",
+			"command": "west",
+			"args": [
+				"build",
+				"-p", "always",
+				"-b", "nucleo_f103rb",
+				"-d", "${workspaceFolder}/application-tmc-uart/build",
+				"${workspaceFolder}/application-tmc-uart"
+			]
+		},
+
+		{
+			"label": "Flash TMC app",
+			"detail": "Flash TMC app",
+			"type": "shell",
+			"group": "build",
+			"command": "west",
+			"args": [
+				"flash",
+				"-d", "${workspaceFolder}/application-tmc/build"
+			],
+			"promptOnClose": false,
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": true,
+				"clear": true
+			},
+			"options": {
+				//"cwd": "${workspaceFolder}"
+				//"cwd": "/home/stefano/ncs/v2.0.0"
+			}
+		},
+		{
+			"label": "Flash TMC UART app",
+			"detail": "Flash TMC UART app",
+			"type": "shell",
+			"group": "build",
+			"command": "west",
+			"args": [
+				"flash",
+				"-d", "${workspaceFolder}/application-tmc-uart/build"
+			],
+			"promptOnClose": false,
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": true,
+				"clear": true
+			}
+		},
+
+		{
+			"label": "Debug TMC app",
+			"detail": "Flash TMC app",
+			"type": "shell",
+			"group": "build",
+			"command": "west",
+			"args": [
+				"debug",
+				"-d", "${workspaceFolder}/application-tmc/build"
+			],
+			"promptOnClose": false,
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": true,
+				"clear": true
+			},
+			"options": {
+				//"cwd": "${workspaceFolder}"
+				//"cwd": "/home/stefano/ncs/v2.0.0"
+			}
+		}
+	]
+}

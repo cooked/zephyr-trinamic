@@ -1,0 +1,42 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+
+	"settings": {
+		"cortex-debug.JLinkGDBServerPath.linux": "/opt/SEGGER/JLink/JLinkGDBServerCLExe",
+
+		"cortex-debug.armToolchainPath": "/usr/bin",
+		"cortex-debug.armToolchainPrefix": "arm-none-eabi",
+		"cortex-debug.gdbPath": "gdb-multiarch",
+		//"cortex-debug.variableUseNaturalFormat": true,
+		//"cortex-debug.openocdPath.linux": "../zephyr-sdk-0.14.2/sysroots/x86_64-pokysdk-linux/usr/bin/openocd",
+
+		// You're going to use tabs, Mr. Anderson. Whether you want to or not.
+		"editor.insertSpaces": false,
+		"editor.tabSize": 4,
+		"editor.rulers": [
+			80,
+			100
+		],
+		"search.showLineNumbers": true,
+		"explorer.confirmDelete": false,
+		"debug.onTaskErrors": "abort",
+		"files.trimFinalNewlines": true,
+		"files.trimTrailingWhitespace": true,
+		"diffEditor.ignoreTrimWhitespace": false,
+		"rewrap.autoWrap.enabled": true,
+
+		// Increase scrollback for integrated terminal so that we can see all
+		// the output of our scripts
+		// https://github.com/Microsoft/vscode/issues/63452
+		"terminal.integrated.scrollback": 99999,
+		"C_Cpp.errorSquiggles": "Enabled",
+		"C_Cpp.default.includePath": [
+
+		],
+	},
+
+}

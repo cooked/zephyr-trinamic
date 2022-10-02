@@ -1,0 +1,27 @@
+# TMC5160 Stepper driver
+#
+# Copyright (c) 2022 Wrecklab BV
+#
+# SPDX-License-Identifier: Apache-2.0
+
+#DT_COMPAT_TMC5160 := trinamic,tmc5160
+
+menuconfig TMC5160
+	bool "TMC5160 stepper driver"
+	#default $(dt_compat_enabled,$(DT_COMPAT_TMC5160))
+	#depends on SPI || SERIAL
+	help
+		Enable driver for TMC5160 stepper driver.
+
+	config TMC5160_SPI
+		bool "Use SPI"
+    	select SPI
+
+	config TMC5160_UART
+    	bool "Use UART"
+		select SERIAL
+
+	config TMC5160_UART_DMA
+    	bool "Use UART with DMA"
+		depends on TMC5160_UART
+		select UART_ASYNC_API

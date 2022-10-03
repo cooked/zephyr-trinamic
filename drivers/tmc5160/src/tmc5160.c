@@ -174,7 +174,8 @@ static int tmc5160_init(const struct device *dev)
 	uart_rx_disable(cfg->uart);
 	uart_callback_set(cfg->uart, cfg->cb_dma, (void *)dev);
 	// TODO: here we should initialize all slave... maybe with the addressing first
-	//tmc_init(dev, SLAVEADDR);
+
+	//tmc_init(dev, 0);
 
 #endif
 

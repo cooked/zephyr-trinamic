@@ -10,7 +10,7 @@
 #include <device.h>
 
 #define SYNC_NIBBLE 	0x05
-#define REG_WRITE_BIT	0x40
+#define REG_WRITE_BIT	0x80
 
 #define SLAVEADDR 		0x01 // 0x01 default (internal pu resistor)
 #define N_WR 			8

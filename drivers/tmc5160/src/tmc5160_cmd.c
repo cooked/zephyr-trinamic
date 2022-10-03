@@ -72,6 +72,17 @@ static int cmd_tmc_dump(const struct shell *shell, size_t argc, char *argv[])
 
 	return 0;
 }
+static int cmd_tmc_init(const struct shell *shell, size_t argc, char *argv[])
+{
+    slave = (uint8_t) strtol(argv[CMD_ARG_N], &argv[CMD_ARG_N], 10);
+
+	shell_fprintf(shell, SHELL_NORMAL, "TMC init slave %u in POS mode \n", slave);
+
+	tmc_init(tmc, slave);
+
+    return 0;
+}
+
 static int cmd_tmc_run(const struct shell *shell, size_t argc, char *argv[])
 {
 	// TODO: add a second parameter for acceleration
@@ -153,6 +164,9 @@ static int cmd_tmc_cur(const struct shell *shell, size_t argc, char *argv[])
 }
 
 SHELL_STATIC_SUBCMD_SET_CREATE( tmc_cmds,
+
+	SHELL_CMD_ARG(init, NULL, "Initialize slave in position mode",
+		cmd_tmc_init, 2, 0),
 
 	SHELL_CMD_ARG(dump, NULL, "Printout slave readable registers",
 		cmd_tmc_dump, 2, 0),

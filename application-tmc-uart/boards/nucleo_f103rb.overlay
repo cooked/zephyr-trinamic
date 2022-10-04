@@ -33,20 +33,6 @@
 	// default ST-LINK / debug port (hence also zephyr console)
 };
 
-&usart3 {
-	//status = "okay";
-   	/*single-wire;
-	//dmas = <&dma1 2 0x440>,
-	//		<&dma1 3 0x480>;
-	//dma-names = "tx", "rx";
-
-	tmc0: tmc5160 {
-		compatible = "trinamic,tmc5160";
-		status = "okay";
-		label = "TMC5160";
-	};*/
-};
-
 // see https://github.com/zephyrproject-rtos/zephyr/blob/db3f8c16e9c95801961a433c07f481bfcb385466/tests/drivers/uart/uart_async_api/boards/nucleo_f103rb.overlay
 &dma1 {
 	status = "okay";

@@ -1,17 +1,5 @@
 
 /* SPDX-License-Identifier: Apache-2.0 */
-
-/ {
-
-    /*aliases {
-        pwmled0 = &green_pwm_led;
-    };*/
-
-};
-
-&spi1 {
-	//status = "disabled";
-};
 &spi2 {
 	cs-gpios = <&gpiob 12 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
 
@@ -24,10 +12,6 @@
 		// datasheet: 4MHz internal, 8MHz external clock
 		// TODO: seems not to work for higher speed than 1MHz
 		spi-max-frequency = <1000000>;
-
-		// This defines the GPIO pins which are used for the diagnostics/interrupt
-		//diag0-pin = <&gpio0 6 (GPIO_ACTIVE_HIGH)>;
-		//diag1-pin = <&gpio0 6 (GPIO_ACTIVE_HIGH)>;
 
 		rotation-distance = <1>;	// [mm/turn]
 	};

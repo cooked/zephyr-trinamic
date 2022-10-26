@@ -7,12 +7,9 @@
 
 	"settings": {
 		"cortex-debug.JLinkGDBServerPath.linux": "/opt/SEGGER/JLink/JLinkGDBServerCLExe",
-
 		"cortex-debug.armToolchainPath": "/usr/bin",
 		"cortex-debug.armToolchainPrefix": "arm-none-eabi",
 		"cortex-debug.gdbPath": "gdb-multiarch",
-		//"cortex-debug.variableUseNaturalFormat": true,
-		//"cortex-debug.openocdPath.linux": "../zephyr-sdk-0.14.2/sysroots/x86_64-pokysdk-linux/usr/bin/openocd",
 
 		// You're going to use tabs, Mr. Anderson. Whether you want to or not.
 		"editor.insertSpaces": false,

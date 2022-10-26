@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Wrecklab BV
+ * Copyright (c) 2022, Stefano Cottafavi <stefano.cottafavi@gmail.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -9,9 +9,9 @@
 
 #include <drivers/gpio.h>
 
-#ifdef TMC5160_SPI
+#if CONFIG_TMC5160_SPI
 #include <drivers/spi.h>
-#else
+#elif CONFIG_TMC5160_UART
 #include <drivers/uart.h>
 #endif
 
@@ -40,8 +40,7 @@ struct tmc5160_data_t {
 	uint16_t i_run;
 	uint16_t i_hold;
 
-#ifdef TMC5160_SPI
-#else
+#if CONFIG_TMC5160_UART
 	struct k_sem tx_sem;
 	struct k_sem rx_sem;
 
@@ -57,9 +56,9 @@ struct tmc5160_data_t {
 
 struct tmc5160_config {
 
-#ifdef TMC5160_SPI
+#if CONFIG_TMC5160_SPI
 	const struct spi_dt_spec spi;
-#else
+#elif CONFIG_TMC5160_UART
 	const struct device *uart;
 	uart_irq_callback_user_data_t cb;
 	uart_callback_t cb_dma;
@@ -126,16 +125,5 @@ void tmc_run(const struct device *dev, uint8_t slave, int32_t speed, int32_t acc
 
 int tmc_test(const struct device *dev);
 int tmc_dump(const struct device *dev, uint8_t slave);
-
-/*const char *bit_rep[16] = {
-	[ 0] = "0000", [ 1] = "0001", [ 2] = "0010", [ 3] = "0011",
-	[ 4] = "0100", [ 5] = "0101", [ 6] = "0110", [ 7] = "0111",
-	[ 8] = "1000", [ 9] = "1001", [10] = "1010", [11] = "1011",
-	[12] = "1100", [13] = "1101", [14] = "1110", [15] = "1111",
-};
-
-void print_byte(uint8_t byte) {
-	printk("%s%s", bit_rep[byte >> 4], bit_rep[byte & 0x0F]);
-}*/
 
 #endif /* ZEPHYR_DRIVERS_TMC5160_H_ */

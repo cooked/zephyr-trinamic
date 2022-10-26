@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Wrecklab BV
+ * Copyright (c) 2022, Stefano Cottafavi <stefano.cottafavi@gmail.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -54,7 +54,7 @@ void main(void)
 	uint8_t reg = TMC5160_GSTAT;
 	//reg = TMC5160_INP_OUT;
 	reg = TMC5160_RAMPMODE;
-	uint32_t data, count = 0;
+	uint32_t count = 0;
 
 	while (1) {
 
@@ -65,7 +65,6 @@ void main(void)
 		}
 
 		//tmc_reg_write(tmc, 0, reg, 1);
-
 		//tmc_reg_read(tmc, 0, reg, &data);
 		//printk( "Count %u - Register value: 0x%08X \n", count, data);
 

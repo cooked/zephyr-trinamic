@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Wrecklab BV
+ * Copyright (c) 2022, Stefano Cottafavi <stefano.cottafavi@gmail.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  */

@@ -1,5 +1,8 @@
-
-/* SPDX-License-Identifier: Apache-2.0 */
+/*
+ * Copyright (c) 2022, Stefano Cottafavi <stefano.cottafavi@gmail.com>
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 / {
 	aliases {
@@ -29,8 +32,8 @@
 };
 
 &usart2 {
-	// !!! LEAVE THIS ALONE !!!
-	// default ST-LINK / debug port (hence also zephyr console)
+	// !!! default ST-LINK / debug port (hence also zephyr console), don't use
+	// it for TMC
 };
 
 // see https://github.com/zephyrproject-rtos/zephyr/blob/db3f8c16e9c95801961a433c07f481bfcb385466/tests/drivers/uart/uart_async_api/boards/nucleo_f103rb.overlay

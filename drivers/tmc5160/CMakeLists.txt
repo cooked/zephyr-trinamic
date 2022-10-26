@@ -1,4 +1,6 @@
-# SPDX-License-Identifier: Apache-2.0
+ # Copyright (c) 2022, Stefano Cottafavi <stefano.cottafavi@gmail.com>
+ #
+ # SPDX-License-Identifier: Apache-2.0
 
 if(CONFIG_TMC5160)
 	# Add *.h to global include paths

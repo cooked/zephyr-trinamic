@@ -4,8 +4,8 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"label": "Build TMC app",
-			"detail": "Builds TMC app",
+			"label": "Build TMC SPI sample",
+			"detail": "Builds TMC SPI sample",
 			"type": "shell",
 			"group": "build",
 			"command": "west",
@@ -13,38 +13,37 @@
 				"build",
 				"-p", "always",
 				"-b", "nucleo_f103rb",
-				"-d", "${workspaceFolder}/application-tmc/build",
-				"${workspaceFolder}/application-tmc"
+				"-d", "${workspaceFolder}/samples/tmc-spi/build",
+				"${workspaceFolder}/samples/tmc-spi"
 			]
 		},
 		{
-			"label": "Flash TMC app",
-			"detail": "Flash TMC app",
+			"label": "Flash TMC SPI sample",
+			"detail": "Flash TMC SPI sample",
 			"type": "shell",
 			"group": "build",
 			"command": "west",
 			"args": [
 				"flash",
-				"-d", "${workspaceFolder}/application-tmc/build"
+				"-d", "${workspaceFolder}/samples/tmc-spi/build"
 			],
 		},
 		{
-			"label": "Debug TMC app",
-			"detail": "Flash TMC app",
+			"label": "Debug TMC SPI sample",
+			"detail": "debug TMC SPI sample",
 			"type": "shell",
 			"group": "build",
 			"command": "west",
 			"args": [
 				"debug",
-				"-d", "${workspaceFolder}/application-tmc/build"
+				"-d", "${workspaceFolder}/samples/tmc-spi/build"
 			],
 		},
 
 
-
 		{
-			"label": "Build TMC UART app",
-			"detail": "Builds TMC UART app",
+			"label": "Build TMC UART sample",
+			"detail": "Build TMC UART sample",
 			"type": "shell",
 			"group": "build",
 			"command": "west",
@@ -52,19 +51,30 @@
 				"build",
 				"-p", "always",
 				"-b", "nucleo_f103rb",
-				"-d", "${workspaceFolder}/application-tmc-uart/build",
-				"${workspaceFolder}/application-tmc-uart"
+				"-d", "${workspaceFolder}/samples/tmc-uart/build",
+				"${workspaceFolder}/samples/tmc-uart"
 			]
 		},
 		{
-			"label": "Flash TMC UART app",
-			"detail": "Flash TMC UART app",
+			"label": "Flash TMC UART sample",
+			"detail": "Flash TMC UART sample",
 			"type": "shell",
 			"group": "build",
 			"command": "west",
 			"args": [
 				"flash",
-				"-d", "${workspaceFolder}/application-tmc-uart/build"
+				"-d", "${workspaceFolder}/samples/tmc-uart/build"
+			],
+		},
+		{
+			"label": "Debug TMC UART sample",
+			"detail": "debug TMC UART sample",
+			"type": "shell",
+			"group": "build",
+			"command": "west",
+			"args": [
+				"debug",
+				"-d", "${workspaceFolder}/samples/tmc-uart/build"
 			],
 		}
 	]

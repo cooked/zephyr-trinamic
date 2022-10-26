@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Wrecklab BV
+ * Copyright (c) 2022, Stefano Cottafavi <stefano.cottafavi@gmail.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -21,9 +21,9 @@
 #include "tmc5160_reg.h"
 #include "tmc5160_fields.h"
 
-#ifdef TMC5160_SPI
+#if CONFIG_TMC5160_SPI
 #include "tmc5160_spi.h"
-#else
+#elif CONFIG_TMC5160_UART
 #include "tmc5160_uart.h"
 #endif
 
@@ -164,19 +164,16 @@ static int tmc5160_init(const struct device *dev)
 
 	int res = 0;
 
-#if TMC5160_SPI
+#if CONFIG_TMC5160_SPI
 	if (!spi_is_ready(&cfg->spi)) {
 		LOG_ERR("SPI bus is not ready");
 		return -ENODEV;
 	}
-#else
-
+#elif CONFIG_TMC5160_UART
 	uart_rx_disable(cfg->uart);
 	uart_callback_set(cfg->uart, cfg->cb_dma, (void *)dev);
 	// TODO: here we should initialize all slave... maybe with the addressing first
-
 	//tmc_init(dev, 0);
-
 #endif
 
 	LOG_INF("tmc5160_init done");
@@ -189,13 +186,13 @@ uint8_t tmc_reg_read(const struct device *dev, uint8_t slave, uint8_t reg, uint3
 
 	const struct tmc5160_config *cfg = dev->config;
 
-#if TMC5160_SPI
+#if CONFIG_TMC5160_SPI
 	uint8_t buf[5] = {0};
 	spi_read_register( &(cfg->spi), reg, buf );
 	// TODO: replace with sys_to.... from byteorder.h
 	//sys_be32_to_cpu();
 	*data = assemble_32(&buf[1]);
-#else
+#elif CONFIG_TMC5160_UART
 	uint8_t buf[8] = {0};
 	uart_read_register(cfg->uart, slave, reg, buf);
 	*data = assemble_32(&buf[3]);
@@ -208,9 +205,9 @@ uint8_t tmc_reg_write(const struct device *dev, uint8_t slave, uint8_t reg, uint
 
 	const struct tmc5160_config *cfg = dev->config;
 
-#ifdef TMC5160_SPI
+#if CONFIG_TMC5160_SPI
 	spi_write_register( &(cfg->spi), reg, value);
-#else
+#elif CONFIG_TMC5160_UART
 	uart_write_register( cfg->uart, slave, reg, value );
 #endif
 
@@ -275,19 +272,6 @@ void tmc_run(const struct device *dev, uint8_t slave, int32_t speed, int32_t acc
 		// keep existing ramp_mode, but stop motion (speed=0)
 	}
 }
-
-/*void tmc_pos(const struct device *dev, int32_t pos, int32_t acc) {
-
-	// AMAX acceleration and deceleration value in velocity mode (DS pag. 40)
-	if(acc!=0)
-		tmc_reg_write(dev, TMC5160_AMAX, (uint32_t)acc );
-
-	// VMAX velocity value in velocity mode (DS pag. 40)
-	tmc_reg_write(dev, TMC5160_VMAX, (uint32_t)((float)speed * RPM_TO_PPS / TMC_T) );
-
-	// position mode
-	tmc_reg_write(dev, TMC5160_RAMPMODE, 0);
-}*/
 
 int tmc_dump(const struct device *dev, uint8_t slave) {
 
@@ -412,7 +396,7 @@ static const struct sensor_driver_api tmc5160_api = {
 static struct tmc5160_config tmc5160_cfg_0 = {
 #ifdef TMC5160_SPI
 	.spi = SPI_DT_SPEC_INST_GET(0, TMC5160_SPI_CFG, 0),
-#else
+#elif TMC5160_UART
 	.uart = DEVICE_DT_GET(DT_INST_BUS(0)),
 	.cb = uart_cb,
 	.cb_dma = uart_cb_dma,

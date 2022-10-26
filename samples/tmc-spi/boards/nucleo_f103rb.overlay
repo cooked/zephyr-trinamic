@@ -1,5 +1,9 @@
+/*
+ * Copyright (c) 2022, Stefano Cottafavi <stefano.cottafavi@gmail.com>
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
-/* SPDX-License-Identifier: Apache-2.0 */
 &spi2 {
 	cs-gpios = <&gpiob 12 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
 
@@ -9,7 +13,7 @@
 		label = "TMC5160";
 		reg = <0x00>;
 
-		// datasheet: 4MHz internal, 8MHz external clock
+		// 4MHz internal, 8MHz external clock
 		// TODO: seems not to work for higher speed than 1MHz
 		spi-max-frequency = <1000000>;
 

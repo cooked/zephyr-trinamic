@@ -3,6 +3,23 @@
 	// for the documentation about the tasks.json format
 	"version": "2.0.0",
 	"tasks": [
+
+		{
+			"label": "Build printHAT sample",
+			"detail": "Builds printHAT sample",
+			"type": "shell",
+			"group": "build",
+			"command": "west",
+			"args": [
+				"build",
+				"-p", "always",
+				"-b", "printhat2",
+				"-d", "${workspaceFolder}/samples/printhat2/build",
+				"${workspaceFolder}/samples/printhat2"
+			]
+		},
+
+
 		{
 			"label": "Build TMC SPI sample",
 			"detail": "Builds TMC SPI sample",

@@ -1,0 +1,5 @@
+menu "TRINAMIC drivers"
+
+rsource "tmc5160/Kconfig"
+
+endmenu

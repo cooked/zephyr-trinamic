@@ -1,0 +1,2 @@
+add_subdirectory_ifdef(CONFIG_TMC5160 tmc5160)
+add_subdirectory_ifdef(CONFIG_TMC2209 tmc2209)

@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 menuconfig TMC5160
-	bool "TMC5160 stepper driver"
+	bool "Enable support for the TMC5160 stepper driver"
 	#depends on SPI || SERIAL
 	help
 		Enable driver for TMC5160 stepper driver.

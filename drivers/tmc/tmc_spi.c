@@ -5,7 +5,7 @@
  */
 
 //#include <sys/util.h>
-#include "tmc5160_spi.h"
+#include "tmc_spi.h"
 
 int spi_read_register(const struct spi_dt_spec *bus, uint8_t reg, uint8_t *data)
 {

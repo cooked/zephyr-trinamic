@@ -14,12 +14,9 @@
 				"build",
 				"-p", "always",
 				"-b", "printhat2",
-				"-d", "${workspaceFolder}/samples/printhat2/build",
 				"${workspaceFolder}/samples/printhat2"
 			]
 		},
-
-
 		{
 			"label": "Build TMC SPI sample",
 			"detail": "Builds TMC SPI sample",
@@ -30,34 +27,9 @@
 				"build",
 				"-p", "always",
 				"-b", "nucleo_f103rb",
-				"-d", "${workspaceFolder}/samples/tmc-spi/build",
 				"${workspaceFolder}/samples/tmc-spi"
 			]
 		},
-		{
-			"label": "Flash TMC SPI sample",
-			"detail": "Flash TMC SPI sample",
-			"type": "shell",
-			"group": "build",
-			"command": "west",
-			"args": [
-				"flash",
-				"-d", "${workspaceFolder}/samples/tmc-spi/build"
-			],
-		},
-		{
-			"label": "Debug TMC SPI sample",
-			"detail": "debug TMC SPI sample",
-			"type": "shell",
-			"group": "build",
-			"command": "west",
-			"args": [
-				"debug",
-				"-d", "${workspaceFolder}/samples/tmc-spi/build"
-			],
-		},
-
-
 		{
 			"label": "Build TMC UART sample",
 			"detail": "Build TMC UART sample",
@@ -68,31 +40,28 @@
 				"build",
 				"-p", "always",
 				"-b", "nucleo_f103rb",
-				"-d", "${workspaceFolder}/samples/tmc-uart/build",
 				"${workspaceFolder}/samples/tmc-uart"
 			]
 		},
+
+
 		{
-			"label": "Flash TMC UART sample",
-			"detail": "Flash TMC UART sample",
+			"label": "Flash sample",
 			"type": "shell",
 			"group": "build",
 			"command": "west",
 			"args": [
-				"flash",
-				"-d", "${workspaceFolder}/samples/tmc-uart/build"
+				"flash"
 			],
 		},
 		{
-			"label": "Debug TMC UART sample",
-			"detail": "debug TMC UART sample",
+			"label": "Debug sample",
 			"type": "shell",
 			"group": "build",
 			"command": "west",
 			"args": [
 				"debug",
-				"-d", "${workspaceFolder}/samples/tmc-uart/build"
 			],
-		}
+		},
 	]
 }

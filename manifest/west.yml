@@ -8,13 +8,21 @@ manifest:
   remotes:
     - name: zephyr
       url-base: https://github.com/zephyrproject-rtos
+    - name: trinamic
+      url-base: https://github.com/cooked
 
   projects:
     - name: zephyr
       remote: zephyr
       repo-path: zephyr
-      revision: v3.0.0
+      revision: v3.2.0
       import:
         name-allowlist:
           - cmsis
           - hal_stm32
+
+    - name: hal_tmc
+      remote: trinamic
+      repo-path: TMC-API
+      path: modules/hal/trinamic
+      revision: zephyr

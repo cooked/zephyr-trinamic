@@ -4,19 +4,24 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+/ {
+	aliases {
+		tmc0 = &tmc_0;
+	};
+};
+
 &spi2 {
 	cs-gpios = <&gpiob 12 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
 
-	tmc0: tmc5160@0 {
+	tmc_0: tmc5160@0 {
 		compatible = "trinamic,tmc5160";
 		status = "okay";
-		label = "TMC5160";
 		reg = <0x00>;
 
 		// 4MHz internal, 8MHz external clock
 		// TODO: seems not to work for higher speed than 1MHz
 		spi-max-frequency = <1000000>;
 
-		rotation-distance = <1>;	// [mm/turn]
+		rotation-distance = <1>;    // [mm/turn]
 	};
 };

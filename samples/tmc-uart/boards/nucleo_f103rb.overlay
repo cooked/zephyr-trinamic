@@ -8,7 +8,8 @@
 	aliases {
 	   uart1 = &usart1;
 	   uart2 = &usart2;
-	   uart3 = &usart3;
+	   //uart3 = &usart3;
+	   tmc0 = &tmc_0;
    };
 };
 
@@ -24,10 +25,9 @@
 	single-wire;
 	pinctrl-0 = <&usart1_tx_pa9>;
 
-	tmc0: tmc5160 {
+	tmc_0:tmc5160 {
 		compatible = "trinamic,tmc5160";
 		status = "okay";
-		label = "TMC5160";
 	};
 };
 

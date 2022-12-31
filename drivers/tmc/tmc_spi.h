@@ -7,8 +7,8 @@
 #ifndef ZEPHYR_DRIVERS_TMC5160_SPI_H_
 #define ZEPHYR_DRIVERS_TMC5160_SPI_H_
 
-#include <device.h>
-#include <drivers/spi.h>
+#include <zephyr/device.h>
+#include <zephyr/drivers/spi.h>
 
 #define REG_SPI_READ_BIT 	0x00
 #define REG_SPI_WRITE_BIT 	0x80

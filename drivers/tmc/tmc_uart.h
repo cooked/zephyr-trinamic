@@ -4,10 +4,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef ZEPHYR_DRIVERS_TMC5160_UART_H_
-#define ZEPHYR_DRIVERS_TMC5160_UART_H_
+#ifndef ZEPHYR_DRIVERS_TMC_UART_H_
+#define ZEPHYR_DRIVERS_TMC_UART_H_
 
-#include <device.h>
+#include <zephyr/device.h>
 
 #define SYNC_NIBBLE 	0x05
 #define REG_WRITE_BIT	0x80
@@ -28,4 +28,4 @@ void uart_cb_dma(const struct device *uart, struct uart_event *evt, void *user_d
 
 void uart_flush(const struct device *uart_dev);
 
-#endif /* ZEPHYR_DRIVERS_TMC5160_UART_H_ */
+#endif /* ZEPHYR_DRIVERS_TMC_UART_H_ */

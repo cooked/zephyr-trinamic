@@ -4,26 +4,21 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <zephyr.h>
-#include <device.h>
-#include <devicetree.h>
-#include <drivers/gpio.h>
+#include <zephyr/device.h>
+#include <zephyr/drivers/gpio.h>
 
 #include "tmc5160.h"
 
 #define SLEEP_TIME_MS   1000
-#define LED0_NODE DT_ALIAS(led0)
+
+const struct device *tmc0 = DEVICE_DT_GET( DT_ALIAS(tmc0) );
+struct gpio_dt_spec led = GPIO_DT_SPEC_GET( DT_ALIAS(led0), gpios);
 
 bool toggle;
 
-const struct device *tmc;
-struct gpio_dt_spec led = GPIO_DT_SPEC_GET(LED0_NODE, gpios);
+void main(void) {
 
-void main(void)
-{
-	tmc = DEVICE_DT_GET_ANY(trinamic_tmc5160);
-
-	if (tmc == NULL) {
+	if( !device_is_ready(tmc0) ) {
 		return;
 	}
 

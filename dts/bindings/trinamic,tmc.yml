@@ -2,12 +2,6 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-description: TMC5160 stepper driver (SPI)
-
-compatible: "trinamic,tmc5160"
-
-include: spi-device.yaml
-
 properties:
   diag0-pin:
     type: phandles
@@ -17,6 +11,7 @@ properties:
     type: phandles
     description: |
       Diagnostic pin 1
+
   r-sens:
     type: int
     description: |

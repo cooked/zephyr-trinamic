@@ -4,14 +4,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// see:
-// https://docs.zephyrproject.org/3.1.0/hardware/peripherals/uart.html
+// see: https://docs.zephyrproject.org/3.1.0/hardware/peripherals/uart.html
 
 #include <string.h> // memcpy
-#include <drivers/uart.h>
+#include <zephyr/drivers/uart.h>
 
-#include "tmc5160.h"
-#include "tmc5160_uart.h"
+#include "tmc.h"
+#include "tmc_uart.h"
 
 // DMA
 K_SEM_DEFINE(tx_done, 1, 1);
@@ -47,17 +46,11 @@ int uart_read_register(const struct device *uart, uint8_t slave, uint8_t reg, ui
 	// TODO: add check on response checksum
 
 	// TODO: 2nd field, put proper address
-	uint8_t tx_buf[N_RD] = {
-		SYNC_NIBBLE,
-		slave,
-		reg,
-		0
-	};
+	uint8_t tx_buf[N_RD] = { SYNC_NIBBLE, slave, reg, 0 };
 	uart_crc(tx_buf, N_RD);
 
 	// ASYNC (w/ DMA)
-	// !!! IMPORTANT: remember to config DMA in the dts
-	// see:
+	// !!! IMPORTANT: remember to config DMA in the dts, see:
 	// https://github.com/nrfconnect/sdk-zephyr/blob/main/tests/drivers/uart/uart_async_api/src/test_uart_async.c
 	// https://github.com/zephyrproject-rtos/zephyr/issues/39395
 	// https://github.com/StefJar/zephyr_stm32_uart3_dma_driver/blob/master/uart3_dma.c
@@ -92,7 +85,6 @@ int uart_read_register(const struct device *uart, uint8_t slave, uint8_t reg, ui
 
 	return 0;
 }
-
 int uart_write_register(const struct device *uart, uint8_t slave, uint8_t reg, uint32_t value) {
 
 	uint8_t tx_buf[N_WR] = {
@@ -168,7 +160,7 @@ void uart_cb(const struct device *uart, void *user_data) {
 
 	// TODO: check that user_data contains in fact what we expect
 	const struct device *dev = user_data;
-	struct tmc5160_data_t *data = dev->data;
+	struct tmc_data *data = dev->data;
 
 	if (!uart_irq_update(uart)) {
 		return;

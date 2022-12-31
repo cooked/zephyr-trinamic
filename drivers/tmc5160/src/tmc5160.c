@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, Stefano Cottafavi <stefano.cottafavi@gmail.com>
+ * Copyright (c) 2022, Stefano Cottafavi
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -7,28 +7,29 @@
 // mind include path
 // https://stackoverflow.com/questions/72294929/location-of-source-file-include-drivers-gpio-h
 
-#define DT_DRV_COMPAT trinamic_tmc5160
+#include <zephyr/device.h>
+#include <zephyr/devicetree.h>
+#include <zephyr/kernel.h>
+#include <zephyr/drivers/sensor.h>
+#include <zephyr/sys/util.h>
+#include <zephyr/sys/byteorder.h>	// sys_to_xxx()
+#include <zephyr/init.h>
 
-#include <device.h>
-#include <devicetree.h>
-#include <kernel.h>
-#include <drivers/sensor.h>
-#include <sys/util.h>
-#include <sys/byteorder.h>	// sys_to_xxx()
-#include <init.h>
-
+#include "tmc.h"
 #include "tmc5160.h"
-#include "tmc5160_reg.h"
-#include "tmc5160_fields.h"
+// from hal_trinamic
+#include "TMC5160_Register.h"
+#include "TMC5160_Fields.h"
 
-#if CONFIG_TMC5160_SPI
-#include "tmc5160_spi.h"
-#elif CONFIG_TMC5160_UART
-#include "tmc5160_uart.h"
+#ifdef CONFIG_TMC_SPI
+#include "tmc_spi.h"
+#endif
+#ifdef CONFIG_TMC_UART
+#include "tmc_uart.h"
 #endif
 
 // piggyback on SPI log level for now
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 
 LOG_MODULE_REGISTER(TMC5160, CONFIG_SENSOR_LOG_LEVEL);
 
@@ -43,7 +44,7 @@ struct field fields[] = {
 	// TODO: change to "recalibrate"
 	{ "iscaleanalog",	{TMC5160_GCONF, 		TMC5160_SHAFT_MASK, 	TMC5160_SHAFT_SHIFT}},
 #endif
-	{ "shaft", 			{TMC5160_GCONF, 		TMC5160_SHAFT_MASK, 	TMC5160_SHAFT_SHIFT}},
+	{ "shaft", 		{TMC5160_GCONF, 		TMC5160_SHAFT_MASK, 	TMC5160_SHAFT_SHIFT}},
 	// TODO: complete above
 	// 0x01 GSTAT
 	{ "reset", 		{TMC5160_GSTAT, 		TMC5160_RESET_MASK, 	TMC5160_RESET_SHIFT}},
@@ -75,7 +76,7 @@ struct field fields[] = {
 	{ "vactual", 	{TMC5160_VACTUAL, 		TMC5160_VACTUAL_MASK, 	TMC5160_VACTUAL_SHIFT}},
 	{ "vstart", 	{TMC5160_VSTART, 		TMC5160_VSTART_MASK, 	TMC5160_VSTART_SHIFT}},
 	{ "a1", 		{TMC5160_A1, 			TMC5160_A1_MASK, 		TMC5160_A1_SHIFT}},
-	{ "v1", 		{TMC5160_V1, 			TMC5160_V1_MASK, 		TMC5160_V1_SHIFT}},
+	{ "v1", 		{TMC5160_V1, 			TMC5160_V1__MASK, 		TMC5160_V1__SHIFT}},
 	{ "amax", 		{TMC5160_AMAX, 			TMC5160_AMAX_MASK, 		TMC5160_AMAX_SHIFT}},
 	{ "vmax", 		{TMC5160_VMAX, 			TMC5160_VMAX_MASK, 		TMC5160_VMAX_SHIFT}},
 	{ "dmax", 		{TMC5160_DMAX, 			TMC5160_DMAX_MASK, 		TMC5160_DMAX_SHIFT}},
@@ -84,8 +85,8 @@ struct field fields[] = {
 	{ "tzerowait", 	{TMC5160_TZEROWAIT, 	TMC5160_TZEROWAIT_MASK, TMC5160_TZEROWAIT_SHIFT}},
 	{ "xtarget", 	{TMC5160_XTARGET, 		TMC5160_XTARGET_MASK, 	TMC5160_XTARGET_SHIFT}},
 	// switch mode config
-	{ "en_softstop",	{TMC5160_SWMODE, 	TMC5160_EN_SOFTSTOP_MASK, 	TMC5160_EN_SOFTSTOP_SHIFT}},
-	{ "sg_stop",		{TMC5160_SWMODE, 	TMC5160_SG_STOP_MASK, 		TMC5160_SG_STOP_SHIFT}},
+	{ "en_softstop",{TMC5160_SWMODE, 	TMC5160_EN_SOFTSTOP_MASK, 	TMC5160_EN_SOFTSTOP_SHIFT}},
+	{ "sg_stop",	{TMC5160_SWMODE, 	TMC5160_SG_STOP_MASK, 		TMC5160_SG_STOP_SHIFT}},
 	// TODO: complete above
 
 	// 0x35 RAMP_STAT
@@ -111,44 +112,39 @@ struct field fields[] = {
 char *fields_gstat[3] = {"reset", "drv_err", "uv_cp"};
 
 struct reg regs[] = {
-	{ TMC5160_GCONF, 		"rw"	},
-	{ TMC5160_GSTAT, 		"rwc"   },
-	{ TMC5160_IFCNT, 		"r"		},
-	{ TMC5160_INP_OUT, 		"r"		},
-	{ TMC5160_SLAVECONF, 	"w"		},
-    { TMC5160_IHOLD_IRUN, 	"w"		},
+	{"GCONF",		{ TMC5160_GCONF, 		"rw"	}},
+	{"GSTAT",		{ TMC5160_GSTAT, 		"rwc"   }},
+	{"IFCNT",		{ TMC5160_IFCNT, 		"r"		}},
+	{"INP_OUT",		{ TMC5160_INP_OUT, 		"r"		}},
+	{"SLAVECONF",	{ TMC5160_SLAVECONF, 	"w"		}},
+    {"IHOLD_IRUN",	{ TMC5160_IHOLD_IRUN, 	"w"		}},
 	// ramp
-	{ TMC5160_RAMPMODE, 	"rw"	},
-	{ TMC5160_XACTUAL, 		"rw"	},
-	{ TMC5160_VACTUAL, 		"r"		},
-	{ TMC5160_VSTART, 		"w"		},
-	{ TMC5160_A1, 			"w"		},
-	{ TMC5160_V1, 			"w"		},
-	{ TMC5160_AMAX, 		"w"		},
-	{ TMC5160_VMAX, 		"w"		},
-	{ TMC5160_DMAX, 		"w"		},
-	{ TMC5160_D1, 			"w"		},
-	{ TMC5160_VSTOP, 		"w"		},
-	{ TMC5160_TZEROWAIT, 	"w"		},
-	{ TMC5160_XTARGET, 		"rw"	},
-
-	{ TMC5160_SWMODE, 		"rw"	},
-	{ TMC5160_RAMPSTAT, 	"rw"	},
+	{"RAMPMODE",	{ TMC5160_RAMPMODE, 	"rw"	}},
+	{"XACTUAL",		{ TMC5160_XACTUAL, 		"rw"	}},
+	{"VACTUAL",		{ TMC5160_VACTUAL, 		"r"		}},
+	{"VSTART",		{ TMC5160_VSTART, 		"w"		}},
+	{"A1",			{ TMC5160_A1, 			"w"		}},
+	{"V1",			{ TMC5160_V1, 			"w"		}},
+	{"AMAX",		{ TMC5160_AMAX, 		"w"		}},
+	{"VMAX",		{ TMC5160_VMAX, 		"w"		}},
+	{"DMAX",		{ TMC5160_DMAX, 		"w"		}},
+	{"D1",			{ TMC5160_D1, 			"w"		}},
+	{"VSTOP",		{ TMC5160_VSTOP, 		"w"		}},
+	{"TZEROWAIT",	{ TMC5160_TZEROWAIT, 	"w"		}},
+	{"XTARGET",		{ TMC5160_XTARGET,		"rw"	}},
+	{"SW_MODE",		{ TMC5160_SWMODE,		"rw"	}},
+	{"RAMP_STAT",	{ TMC5160_RAMPSTAT,		"rw"	}},
+	{"XLATCH",		{ TMC5160_XLATCH,		"r"		}},
+	// encoder
+	{"ENCMODE",		{ TMC5160_ENCMODE,		"rw"	}},
+	{"X_ENC",		{ TMC5160_XENC,			"rw"	}},
+	{"ENC_CONST",	{ TMC5160_ENC_CONST,	"w"		}},
+	{"ENC_STATUS",	{ TMC5160_ENC_STATUS,	"rwc"	}},
+	{"ENC_LATCH",	{ TMC5160_ENC_LATCH,	"r"		}},
+	{"ENC_DEVIATION",{ TMC5160_ENC_DEVIATION,"w"	}},
 };
 
-attr get_field(char *key) {
-    int i = 0;
-    char *name = fields[i].name;
-    while (name) {
-        if (strcmp(name, key) == 0)
-            return fields[i].a;
-        name = fields[++i].name;
-    }
 
-	// not found
-	attr na = {0,0,0};
-    return na;
-}
 
 uint32_t assemble_32(uint8_t *p_data) {
 	int i;
@@ -160,16 +156,16 @@ uint32_t assemble_32(uint8_t *p_data) {
 
 static int tmc5160_init(const struct device *dev)
 {
-	const struct tmc5160_config *cfg = dev->config;
+	const struct tmc_config *cfg = dev->config;
 
 	int res = 0;
 
-#if CONFIG_TMC5160_SPI
+#if CONFIG_TMC_SPI
 	if (!spi_is_ready(&cfg->spi)) {
 		LOG_ERR("SPI bus is not ready");
 		return -ENODEV;
 	}
-#elif CONFIG_TMC5160_UART
+#elif CONFIG_TMC_UART
 	uart_rx_disable(cfg->uart);
 	uart_callback_set(cfg->uart, cfg->cb_dma, (void *)dev);
 	// TODO: here we should initialize all slave... maybe with the addressing first
@@ -184,15 +180,15 @@ static int tmc5160_init(const struct device *dev)
 // TMC r/w registers
 uint8_t tmc_reg_read(const struct device *dev, uint8_t slave, uint8_t reg, uint32_t *data) {
 
-	const struct tmc5160_config *cfg = dev->config;
+	const struct tmc_config *cfg = dev->config;
 
-#if CONFIG_TMC5160_SPI
+#if CONFIG_TMC_SPI
 	uint8_t buf[5] = {0};
 	spi_read_register( &(cfg->spi), reg, buf );
 	// TODO: replace with sys_to.... from byteorder.h
 	//sys_be32_to_cpu();
 	*data = assemble_32(&buf[1]);
-#elif CONFIG_TMC5160_UART
+#elif CONFIG_TMC_UART
 	uint8_t buf[8] = {0};
 	uart_read_register(cfg->uart, slave, reg, buf);
 	*data = assemble_32(&buf[3]);
@@ -203,11 +199,11 @@ uint8_t tmc_reg_read(const struct device *dev, uint8_t slave, uint8_t reg, uint3
 
 uint8_t tmc_reg_write(const struct device *dev, uint8_t slave, uint8_t reg, uint32_t value) {
 
-	const struct tmc5160_config *cfg = dev->config;
+	const struct tmc_config *cfg = dev->config;
 
-#if CONFIG_TMC5160_SPI
+#if CONFIG_TMC_SPI
 	spi_write_register( &(cfg->spi), reg, value);
-#elif CONFIG_TMC5160_UART
+#elif CONFIG_TMC_UART
 	uart_write_register( cfg->uart, slave, reg, value );
 #endif
 
@@ -216,21 +212,21 @@ uint8_t tmc_reg_write(const struct device *dev, uint8_t slave, uint8_t reg, uint
 
 int tmc_init(const struct device *dev, uint8_t slave) {
 
-	const struct tmc5160_config *cfg = dev->config;
+	const struct tmc_config *cfg = dev->config;
 
 	tmc_reg_write(dev, slave, TMC5160_GSTAT, 		0x7			); // clear errors
-	tmc_reg_write(dev, slave, TMC5160_CHOPCONF, 	0x000100C3	); // CHOPCONF: TOFF=3, HSTRT=4, HEND=1, TBL=2, CHM=0 (SpreadCycle)
+	//tmc_reg_write(dev, slave, TMC5160_CHOPCONF, 	0x000100C3	); // CHOPCONF: TOFF=3, HSTRT=4, HEND=1, TBL=2, CHM=0 (SpreadCycle)
 
 	// write only
-	tmc_set_irun_ihold(dev, slave, cfg->run_current, cfg->hold_current);
+	//tmc_set_irun_ihold(dev, slave, cfg->run_current, cfg->hold_current);
 
-	tmc_reg_write(dev, slave, TMC5160_TPOWERDOWN, 	0x0000000A); // TPOWERDOWN=10: Delay before power down in stand still
-	tmc_reg_write(dev, slave, TMC5160_GCONF, 		0x00000004); // EN_PWM_MODE=1 enables StealthChop (with default PWM_CONF)
-	tmc_reg_write(dev, slave, TMC5160_TPWMTHRS, 	0x000001F4); // TPWM_THRS=500 yields a switching velocity about 35000 = ca. 30RPM
+	//tmc_reg_write(dev, slave, TMC5160_TPOWERDOWN, 	0x0000000A); // TPOWERDOWN=10: Delay before power down in stand still
+	//tmc_reg_write(dev, slave, TMC5160_GCONF, 		0x00000004); // EN_PWM_MODE=1 enables StealthChop (with default PWM_CONF)
+	//tmc_reg_write(dev, slave, TMC5160_TPWMTHRS, 	0x000001F4); // TPWM_THRS=500 yields a switching velocity about 35000 = ca. 30RPM
 
 	// prevent motion
-	tmc_reg_write(dev, slave, TMC5160_XTARGET,		0);
-	tmc_reg_write(dev, slave, TMC5160_XACTUAL,		0);
+	//tmc_reg_write(dev, slave, TMC5160_XTARGET,		0);
+	//tmc_reg_write(dev, slave, TMC5160_XACTUAL,		0);
 
 	// add some ramp init
 	// see DS pag. 116 Getting Started
@@ -244,6 +240,8 @@ int tmc_init(const struct device *dev, uint8_t slave) {
 
 	// reset position
 	tmc_reg_write(dev, slave, TMC5160_RAMPMODE,	0);	// set position mode
+
+	tmc_reg_write(dev, slave, TMC5160_RAMPSTAT,	0);	// clear ramp status
 
 	return 0;
 
@@ -279,10 +277,11 @@ int tmc_dump(const struct device *dev, uint8_t slave) {
 
 	size_t nreg = sizeof(regs)/sizeof(regs[0]);
 
-	for(uint8_t reg = 0; reg < nreg; reg++) {
-		if(	strchr( regs[reg].rwc, 'r') ) {
-			tmc_reg_read( dev, slave, regs[reg].reg, &data);
-			printk(" - Register 0x%02X, value: 0x%08X \n", regs[reg].reg, data);
+	for(uint16_t reg = 0; reg < nreg; reg++) {
+		// dump only if readable
+		if(	strchr( regs[reg].attr.rwc, 'r') ) {
+			tmc_reg_read( dev, slave, regs[reg].attr.reg, &data);
+			printk(" - Register (0x%02X) %s	: 0x%08X \n", regs[reg].attr.reg, regs[reg].name, data);
 		}
 	}
 
@@ -292,7 +291,7 @@ int tmc_dump(const struct device *dev, uint8_t slave) {
 // tmc register's field getter/setter
 int32_t tmc_get(const struct device *dev, uint8_t slave, char *key) {
 
-	attr f = get_field(key);
+	attr f = get_field(key, fields);
 
 	uint32_t data;
 	tmc_reg_read(dev, slave, f.reg, &data);
@@ -304,7 +303,7 @@ int32_t tmc_get(const struct device *dev, uint8_t slave, char *key) {
 }
 void tmc_set(const struct device *dev, uint8_t slave, char *key, int32_t value) {
 
-	attr f = get_field(key);
+	attr f = get_field(key, fields);
 	uint32_t data;
 
 	tmc_reg_read(dev, slave, f.reg, &data);
@@ -370,9 +369,7 @@ static int tmc5160_sample_fetch(const struct device *dev, enum sensor_channel ch
 
 	return 0;
 }
-static int tmc5160_channel_get(const struct device *dev,
-			      enum sensor_channel chan,
-			      struct sensor_value *val)
+static int tmc5160_channel_get(const struct device *dev, enum sensor_channel chan, struct sensor_value *val)
 {
 	//struct tmc5160_data *data = dev->data;
 
@@ -390,13 +387,16 @@ static const struct sensor_driver_api tmc5160_api = {
 
 /* device defaults to spi mode 0/3 support */
 #define TMC5160_SPI_CFG \
-			(SPI_OP_MODE_MASTER | SPI_WORD_SET(8) | SPI_TRANSFER_MSB \
-			| SPI_MODE_CPOL | SPI_MODE_CPHA)
+	(SPI_OP_MODE_MASTER | SPI_WORD_SET(8) | SPI_TRANSFER_MSB | SPI_MODE_CPOL | SPI_MODE_CPHA)
 
-static struct tmc5160_config tmc5160_cfg_0 = {
-#ifdef TMC5160_SPI
+// TODO: this must be changed so that a "generic bus" is fetched here, then
+// later in the init function a check is made to see if is SPI or UART
+// doing so allows to remove the ifdef here and allows to use the instance API
+//
+static struct tmc_config tmc5160_cfg = {
+#ifdef CONFIG_TMC_SPI
 	.spi = SPI_DT_SPEC_INST_GET(0, TMC5160_SPI_CFG, 0),
-#elif TMC5160_UART
+#elif CONFIG_TMC_UART
 	.uart = DEVICE_DT_GET(DT_INST_BUS(0)),
 	.cb = uart_cb,
 	.cb_dma = uart_cb_dma,
@@ -407,7 +407,7 @@ static struct tmc5160_config tmc5160_cfg_0 = {
 	//.rpm_to_hzs = ( 1 / DEFAULT_STEPS_TURN / TMC_T )
 };
 
-static struct tmc5160_data_t tmc5160_data = {
+static struct tmc_data tmc5160_data = {
 	.r_sens = DT_INST_PROP(0, r_sens),
 	.i_run = DT_INST_PROP(0, current_run),
 	.i_hold = DT_INST_PROP(0, current_hold),
@@ -418,7 +418,7 @@ DEVICE_DT_INST_DEFINE( \
 	tmc5160_init, \
 	NULL, 	\
 	&tmc5160_data, \
-	&tmc5160_cfg_0, \
+	&tmc5160_cfg, \
 	POST_KERNEL, \
 	CONFIG_SENSOR_INIT_PRIORITY, \
 	&tmc5160_api);

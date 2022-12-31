@@ -4,7 +4,9 @@
 
 menuconfig TMC5160
 	bool "Enable support for the TMC5160 stepper driver"
-	#depends on SPI || SERIAL
+	default y
+	depends on DT_HAS_TRINAMIC_TMC5160_ENABLED
+	select HAS_TMCLIB
 	help
 		Enable driver for TMC5160 stepper driver.
 
@@ -12,15 +14,15 @@ if TMC5160
 
 choice
 	prompt "Communication bus"
-	default TMC5160_SPI
+	default TMC_SPI
 	help
-	  Specify the type of bus the driver uses for communication
+		Specify the type of bus the driver uses for communication
 
-config TMC5160_SPI
+config TMC_SPI
 	bool "Use SPI"
 	select SPI
 
-config TMC5160_UART
+config TMC_UART
 	bool "Use UART"
 	select SERIAL
 

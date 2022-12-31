@@ -4,41 +4,40 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <zephyr.h>
-#include <device.h>
-#include <devicetree.h>
-#include <drivers/gpio.h>
-#include <drivers/uart.h>
+#include <zephyr/device.h>
+#include <zephyr/devicetree.h>
+#include <zephyr/drivers/gpio.h>
+#include <zephyr/drivers/uart.h>
 
+#include "tmc_reg.h"
 #include "tmc5160.h"
 
 #define UART_NODE1 DT_ALIAS(uart1)
 #define UART_NODE2 DT_ALIAS(uart2)
-#define UART_NODE3 DT_ALIAS(uart3)
+//#define UART_NODE3 DT_ALIAS(uart3)
 
 #define SLEEP_TIME_MS   1000
-#define LED0_NODE DT_ALIAS(led0)
 
 bool toggle;
 
-const struct device *tmc;
-struct gpio_dt_spec led = GPIO_DT_SPEC_GET(LED0_NODE, gpios);
+const struct device *tmc0 = DEVICE_DT_GET( DT_ALIAS(tmc0) );
+struct gpio_dt_spec led = GPIO_DT_SPEC_GET( DT_ALIAS(led0), gpios);
 
 const struct device *uart1 = DEVICE_DT_GET(UART_NODE1);
 const struct device *uart2 = DEVICE_DT_GET(UART_NODE2);
-const struct device *uart3 = DEVICE_DT_GET(UART_NODE3);
+//const struct device *uart3 = DEVICE_DT_GET(UART_NODE3);
 
 void main(void)
 {
-	tmc = DEVICE_DT_GET_ANY(trinamic_tmc5160);
-
-	if (tmc == NULL) {
-		return;
-	}
-
 	// config UARTs
 	if (!device_is_ready(uart1) || !device_is_ready(uart2)) {
 		printk("uart devices not ready\n");
+		return;
+	}
+
+	// check tmc
+	if (!device_is_ready(tmc0)) {
+		printk("TMC device not ready\n");
 		return;
 	}
 
@@ -51,9 +50,9 @@ void main(void)
 	}
 	toggle = 1;
 
-	uint8_t reg = TMC5160_GSTAT;
-	//reg = TMC5160_INP_OUT;
-	reg = TMC5160_RAMPMODE;
+	uint8_t reg = TMC_GSTAT;
+	//reg = TMC_INP_OUT;
+	reg = TMC_RAMPMODE;
 	uint32_t count = 0;
 
 	while (1) {
@@ -64,8 +63,8 @@ void main(void)
 			}
 		}
 
-		//tmc_reg_write(tmc, 0, reg, 1);
-		//tmc_reg_read(tmc, 0, reg, &data);
+		//tmc_reg_write(tmc0, 0, reg, 1);
+		//tmc_reg_read(tmc0, 0, reg, &data);
 		//printk( "Count %u - Register value: 0x%08X \n", count, data);
 
 		toggle = !toggle;

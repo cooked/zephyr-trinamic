@@ -1,0 +1,16 @@
+# Copyright (c) 2022, Stefano Cottafavi <stefano.cottafavi@gmail.com>
+#
+# SPDX-License-Identifier: Apache-2.0
+
+description: TMC2209 stepper driver (UART)
+
+compatible: "trinamic,tmc2209"
+
+include: ["uart-device.yaml", "trinamic,tmc.yml"]
+
+properties:
+  slaveaddr:
+    type: int
+    description: |
+      Address of this TMC instance
+    default: 0

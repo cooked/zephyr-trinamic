@@ -7,7 +7,7 @@ list(APPEND ZEPHYR_EXTRA_MODULES
 )
 
 list(APPEND OVERLAY_CONFIG
-	${CMAKE_CURRENT_SOURCE_DIR}/../../drivers/tmc5160/tmc5160-uart.conf
+#	${CMAKE_CURRENT_SOURCE_DIR}/../../drivers/tmc5160/tmc5160-uart.conf
 )
 
 cmake_minimum_required(VERSION 3.20.0)

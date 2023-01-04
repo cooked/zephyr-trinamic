@@ -7,6 +7,6 @@ zephyr_include_directories(src)
 
 zephyr_library()
 
-zephyr_library_sources(src/tmc5160.c)
-zephyr_library_sources(src/tmc5160_map.c)
-zephyr_library_sources_ifdef(CONFIG_SHELL src/tmc5160_shell.c)
+zephyr_library_sources(src/tmc2130.c)
+zephyr_library_sources(src/tmc2130_map.c)
+#zephyr_library_sources_ifdef(CONFIG_SHELL src/tmc2130_shell.c)

@@ -7,10 +7,6 @@ list(APPEND ZEPHYR_EXTRA_MODULES
 	${CMAKE_CURRENT_SOURCE_DIR}/../../drivers
 )
 
-list(APPEND OVERLAY_CONFIG
-#	${CMAKE_CURRENT_SOURCE_DIR}/../../drivers/tmc5160/tmc5160-spi.conf
-)
-
 # Re-direct the directory where the 'boards' directory is found from
 # $ZEPHYR_BASE to this directory.
 # set(BOARD_ROOT ${CMAKE_CURRENT_LIST_DIR})
@@ -23,7 +19,7 @@ cmake_minimum_required(VERSION 3.20.0)
 # required for apps
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 
-project(printhat2)
+project(printhat1)
 
 zephyr_include_directories(src)
 

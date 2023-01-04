@@ -5,7 +5,20 @@
 	"tasks": [
 
 		{
-			"label": "Build printHAT sample",
+			"label": "Build printHAT v1",
+			"detail": "Builds printHAT sample",
+			"type": "shell",
+			"group": "build",
+			"command": "west",
+			"args": [
+				"build",
+				"-p", "always",
+				"-b", "printhat1",
+				"${workspaceFolder}/samples/printhat1"
+			]
+		},
+		{
+			"label": "Build printHAT v2",
 			"detail": "Builds printHAT sample",
 			"type": "shell",
 			"group": "build",
@@ -17,6 +30,7 @@
 				"${workspaceFolder}/samples/printhat2"
 			]
 		},
+
 		{
 			"label": "Build TMC SPI sample",
 			"detail": "Builds TMC SPI sample",
@@ -41,6 +55,19 @@
 				"-p", "always",
 				"-b", "nucleo_f103rb",
 				"${workspaceFolder}/samples/tmc-uart"
+			]
+		},
+		{
+			"label": "Build single-wire",
+			"detail": "Build single-wire",
+			"type": "shell",
+			"group": "build",
+			"command": "west",
+			"args": [
+				"build",
+				"-p", "always",
+				"-b", "nucleo_f103rb",
+				"${workspaceFolder}/samples/single-wire"
 			]
 		},
 

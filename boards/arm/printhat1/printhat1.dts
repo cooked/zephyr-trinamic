@@ -1,0 +1,169 @@
+/*
+ * Copyright (c) 2022, Stefano Cottafavi <stefano.cottafavi@gmail.com>
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/dts-v1/;
+#include <st/f1/stm32f103Xb.dtsi>
+#include <st/f1/stm32f103r(8-b)tx-pinctrl.dtsi>
+
+/ {
+	model = "Wrecklab's printHAT v1 board";
+	compatible = "wrecklab,printhat1";
+
+	chosen {
+		zephyr,console = &usart1;
+		zephyr,shell-uart = &usart1;
+		zephyr,sram = &sram0;
+		zephyr,flash = &flash0;
+	};
+
+	leds {
+		compatible = "gpio-leds";
+		led_0: led_0 {
+			gpios = <&gpioa 0 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+		};
+		led_1: led_1 {
+			gpios = <&gpioa 1 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+		};
+		led_2: led_2 {
+			gpios = <&gpioa 2 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+		};
+		led_3: led_3 {
+			gpios = <&gpioa 3 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+		};
+	};
+
+	// TODO:
+	// other GPIO cwired are all pins from PC0-PC5,PC9-10 incl.
+	// create a limit switch driver?
+
+	aliases {
+		h0 = &led_0;
+		h1 = &led_1;
+		f0 = &led_2;
+		f1 = &led_3;
+	};
+};
+
+&clk_hse {
+	clock-frequency = <DT_FREQ_M(8)>;
+	status = "okay";
+};
+
+&pll {
+	mul = <9>;
+	clocks = <&clk_hse>;
+	status = "okay";
+};
+
+&rcc {
+	clocks = <&pll>;
+	clock-frequency = <DT_FREQ_M(72)>;
+	ahb-prescaler = <1>;
+	apb1-prescaler = <2>;
+	apb2-prescaler = <1>;
+};
+
+// USART1 tx: PA9 rx: PA10     --- to/from RPi
+&usart1 {
+	pinctrl-0 = <&usart1_tx_pa9 &usart1_rx_pa10>;
+	pinctrl-names = "default";
+	current-speed = <115200>;
+	status = "okay";
+};
+
+&spi2 {
+	status = "okay";
+	// TODO: check order is correct
+	pinctrl-0 = <&spi2_sck_master_pb13 &spi2_miso_slave_pb14 &spi2_mosi_slave_pb15>;
+	pinctrl-names = "default";
+
+	cs-gpios = 	<&gpiob 9 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>,
+				<&gpiob 10 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>,
+				<&gpiob 11 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>,
+				<&gpiob 12 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+
+	s1: tmc2130_1@0 {
+		reg = <0>;
+		compatible = "trinamic,tmc2130";
+		// 4MHz internal, 8MHz external clock
+		// TODO: seems not to work for higher speed than 1MHz
+		spi-max-frequency = <1000000>;
+		status = "okay";
+
+		// step_pin = <&gpioa 5 GPIO_ACTIVE_HIIGH>
+		// dir_pin = <&gpioa 6 GPIO_ACTIVE_HIGH>
+
+		// diag0_pin = <&gpiob 5 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
+		// en_pin = <&gpioa 4 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
+	};
+	s2: tmc2130_2@1 {
+		reg = <1>;
+		compatible = "trinamic,tmc2130";
+		spi-max-frequency = <1000000>;
+		status = "okay";
+
+		// step_pin = <&gpioa 12 GPIO_ACTIVE_HIIGH>
+		// dir_pin = <&gpioa 15 GPIO_ACTIVE_HIGH>
+
+		// diag0_pin = <&gpiob 6 (GPIO_ACTIVE_LOW)>
+		// en_pin = <&gpioa 11 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
+	};
+	s3: tmc2130_3@2 {
+		reg = <2>;
+		compatible = "trinamic,tmc2130";
+		spi-max-frequency = <1000000>;
+		status = "okay";
+
+		// step_pin = <&gpioc 7 GPIO_ACTIVE_HIIGH>
+		// dir_pin = <&gpioc 8 GPIO_ACTIVE_HIGH>
+
+		// diag0_pin = <&gpiob 7 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
+		// en_pin = <&gpioc 6 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
+	};
+	s4: tmc2130_4@3 {
+		reg = <3>;
+		compatible = "trinamic,tmc2130";
+		spi-max-frequency = <1000000>;
+		status = "okay";
+
+		// step_pin = <&gpioc 14 GPIO_ACTIVE_HIIGH>
+		// dir_pin = <&gpioc 15 GPIO_ACTIVE_HIGH>
+
+		// diag0_pin = <&gpiob 8 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
+		// en_pin = <&gpioc 13 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
+
+	};
+};
+
+/*&timers2 {
+	status = "okay";
+
+	pwm2: pwm {
+		status = "okay";
+		pinctrl-0 = <&tim2_ch1_pa5>;
+		pinctrl-names = "default";
+	};
+};*/
+
+/*&adc1 {
+	pinctrl-0 = <&adc1_in0_pa0>;
+	pinctrl-names = "default";
+	status = "okay";
+};*/
+
+&flash0 {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		/* Set 2KB of storage at the end of 128KB flash */
+		storage_partition: partition@1f800 {
+			label = "storage";
+			reg = <0x0001f800 DT_SIZE_K(2)>;
+		};
+	};
+};

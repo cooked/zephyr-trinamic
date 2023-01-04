@@ -8,6 +8,12 @@
 #define ZEPHYR_DRIVERS_TMC5160_H_
 
 #include "tmc.h"
+// from hal_trinamic
+#include "TMC5160_Register.h"
+#include "TMC5160_Fields.h"
+
+// NOTE: keep it up to date according to tmcXXXX_map.c
+#define NREG 28
 
 #define DEFAULT_FCLK		12000000.0f	// [Hz]
 

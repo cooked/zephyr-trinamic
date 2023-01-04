@@ -1,5 +1,12 @@
 menu "TRINAMIC drivers"
 
+config TMC_SPI
+	bool "Use SPI"
+
+config TMC_UART
+	bool "Use UART"
+
+rsource "tmc2130/Kconfig"
 rsource "tmc2209/Kconfig"
 rsource "tmc5160/Kconfig"
 

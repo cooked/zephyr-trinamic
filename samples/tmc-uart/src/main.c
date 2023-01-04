@@ -9,12 +9,10 @@
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/drivers/uart.h>
 
-#include "tmc_reg.h"
 #include "tmc5160.h"
 
 #define UART_NODE1 DT_ALIAS(uart1)
 #define UART_NODE2 DT_ALIAS(uart2)
-//#define UART_NODE3 DT_ALIAS(uart3)
 
 #define SLEEP_TIME_MS   1000
 
@@ -50,10 +48,10 @@ void main(void)
 	}
 	toggle = 1;
 
-	uint8_t reg = TMC_GSTAT;
-	//reg = TMC_INP_OUT;
-	reg = TMC_RAMPMODE;
-	uint32_t count = 0;
+	uint8_t reg = TMC5160_GSTAT;
+	//reg = TMC5160_INP_OUT;
+	reg = TMC5160_RAMPMODE;
+	uint32_t count = 0, data;
 
 	while (1) {
 
@@ -64,7 +62,7 @@ void main(void)
 		}
 
 		//tmc_reg_write(tmc0, 0, reg, 1);
-		//tmc_reg_read(tmc0, 0, reg, &data);
+		//tmc_reg_read(tmc0, 0, TMC5160_IFCNT, &data);
 		//printk( "Count %u - Register value: 0x%08X \n", count, data);
 
 		toggle = !toggle;

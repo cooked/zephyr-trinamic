@@ -32,13 +32,25 @@ struct tmc_data {
 	uint16_t i_hold;
 
 #if CONFIG_TMC_UART
+
+	// async
+	//uint8_t tx_buf[8];
+	//uint8_t rx_buf[8];
+
+	uint8_t rd_data[16];
+	uint32_t data;			// Register data (payload in response message)
+
+	uint8_t xfer_bytes;	// transferred bytes
+	uint8_t msg_bytes;	// msg length (set at runtime )
+
+	bool has_rsp;		// has a response? // TODO: always true
+
+
 	struct k_sem tx_sem;
 	struct k_sem rx_sem;
-	/* Max data length is 16 bits */
-	uint16_t data;
-	/* Command buf length is 9 */
-	uint8_t xfer_bytes;
-	uint8_t rd_data[8];
+
+
+
 #endif
 
 };
@@ -49,9 +61,9 @@ struct tmc_config {
 	const struct spi_dt_spec spi;
 #endif
 #if CONFIG_TMC_UART
-	const struct device *uart;
+	const struct device *uart_dev;
 	uart_irq_callback_user_data_t cb;
-	uart_callback_t cb_dma;
+	//uart_callback_t cb_dma;
 #endif
 
 	uint8_t slave;
@@ -100,7 +112,6 @@ struct reg {
 //
 attr get_field(char *key, struct field *fields);
 
-
 uint8_t tmc_reg_read(const struct device *dev, uint8_t slave, uint8_t reg, uint32_t *data);
 uint8_t tmc_reg_write(const struct device *dev, uint8_t slave, uint8_t reg, uint32_t value);
 
@@ -113,6 +124,5 @@ void 	tmc_set_irun_ihold(const struct device *dev, uint8_t slave, uint8_t irun, 
 void    tmc_run(const struct device *dev, uint8_t slave, int32_t speed, int32_t acc);
 int     tmc_dump(const struct device *dev, uint8_t slave);
 int 	tmc_test(const struct device *dev);
-
 
 #endif /* ZEPHYR_DRIVERS_TMC_H_ */

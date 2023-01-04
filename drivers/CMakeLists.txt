@@ -1,3 +1,4 @@
 add_subdirectory(tmc)
-add_subdirectory_ifdef(CONFIG_TMC5160 tmc5160)
+add_subdirectory_ifdef(CONFIG_TMC2130 tmc2130)
 add_subdirectory_ifdef(CONFIG_TMC2209 tmc2209)
+add_subdirectory_ifdef(CONFIG_TMC5160 tmc5160)

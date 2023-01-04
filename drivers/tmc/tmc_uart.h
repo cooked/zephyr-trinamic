@@ -17,13 +17,28 @@
 #define N_RD 			4
 #define N_RSP 			8
 
-int uart_read_register(const struct device *uart, uint8_t slave, uint8_t reg, uint8_t *data);
-int uart_write_register(const struct device *uart, uint8_t slave, uint8_t reg, uint32_t value);
+// TODO:this must be tweeket according to type of comm
+// 3: ok for f103 nucleo using TX poll + RX interrupt
+#define N_RSP_SHIFT 	3
+
+/* Arbitrary max duration to wait for the response */
+#define UART_WAIT K_SECONDS(1)
+
+
+void tmc_uart_flush(const struct device *uart_dev);
+void tmc_uart_isr(const struct device *uart_dev, void *user_data);
+
+
+
+int uart_init(const struct device *dev);
+
+int uart_read_register(const struct device *dev, uint8_t slave, uint8_t reg, uint8_t *value);
+int uart_write_register(const struct device *dev, uint8_t slave, uint8_t reg, uint32_t value);
 
 void uart_discover(const struct device *uart);
 void uart_load_slave_map(const struct device *uart);
 
-void uart_cb(const struct device *uart, void *user_data);
+//void uart_cb(const struct device *uart, void *user_data);
 void uart_cb_dma(const struct device *uart, struct uart_event *evt, void *user_data);
 
 void uart_flush(const struct device *uart_dev);

@@ -4,7 +4,8 @@
             "name": "Zephyr",
             "includePath": [
                 "zephyr/include/**",
-                "drivers/**"
+                "drivers/**",
+                "modules/hal/**"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",

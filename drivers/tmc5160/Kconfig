@@ -7,25 +7,15 @@ menuconfig TMC5160
 	default y
 	depends on DT_HAS_TRINAMIC_TMC5160_ENABLED
 	select HAS_TMCLIB
+	select SPI if $(dt_compat_on_bus,$(DT_COMPAT_TRINAMIC_TMC5160),spi)
+	select TMC_SPI if $(dt_compat_on_bus,$(DT_COMPAT_TRINAMIC_TMC5160),spi)
+	select SERIAL if $(dt_compat_on_bus,$(DT_COMPAT_TRINAMIC_TMC5160),uart)
+	select TMC_UART if $(dt_compat_on_bus,$(DT_COMPAT_TRINAMIC_TMC5160),uart)
 	help
 		Enable driver for TMC5160 stepper driver.
 
 if TMC5160
 
-choice
-	prompt "Communication bus"
-	default TMC_SPI
-	help
-		Specify the type of bus the driver uses for communication
-
-config TMC_SPI
-	bool "Use SPI"
-	select SPI
-
-config TMC_UART
-	bool "Use UART"
-	select SERIAL
-
-endchoice
+# TODO: add diag pin
 
 endif # TMC5160

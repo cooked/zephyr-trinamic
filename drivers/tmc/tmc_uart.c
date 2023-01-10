@@ -42,16 +42,16 @@ void tmc_uart_crc(uint8_t *data, uint8_t data_len) {
 
 int tmc_uart_crc_check(uint8_t *data) {
 
-	// rx CRC
+	// isolate CRC
 	uint8_t crc;
-	memcpy(&crc, &data[N_RSP_SHIFT+7], 	1);
+	memcpy(&crc, &data[N_RSP-1], 1);
 
 	// calc CRC
-	uint8_t tmp[N_RSP] = {0};
-	memcpy(tmp, &data[N_RSP_SHIFT], N_RSP-1);
-	tmc_uart_crc(tmp, N_RSP);
+	uint8_t data_rx[N_RSP] = {0};
+	memcpy(data_rx, data, N_RSP-1);
+	tmc_uart_crc(data_rx, N_RSP);
 
-	if(crc != tmp[N_RSP-1])
+	if(crc != data_rx[N_RSP-1])
 		return -EINVAL;
 
 	return 0;
@@ -97,21 +97,10 @@ int uart_read_register(const struct device *dev, uint8_t slave, uint8_t reg, uin
 	// https://github.com/nrfconnect/sdk-zephyr/blob/main/tests/drivers/uart/uart_async_api/src/test_uart_async.c
 	// https://github.com/StefJar/zephyr_stm32_uart3_dma_driver/blob/master/uart3_dma.c
 
-	uint8_t i;
-
 	// TX
 	uint8_t tx_buf[N_RD] = { SYNC_NIBBLE, slave, reg, 0 };
 	tmc_uart_crc(tx_buf, N_RD);
-	/*for(i=0; i<sizeof(tx_buf); i++) {
-		uart_poll_out(cfg->uart_dev, tx_buf[i]);
-		ret = uart_err_check(cfg->uart_dev);
-		if(ret) {
-			printk("UART TX ERROR: %d\n", ret);
-		}
-	}*/
 
-	// RSP length
-	data->msg_bytes = 8;
 
 #if CONFIG_UART_ASYNC_API
 	// DMA
@@ -135,12 +124,18 @@ int uart_read_register(const struct device *dev, uint8_t slave, uint8_t reg, uin
 
 	uart_rx_disable(cfg->uart_dev);
 
-	printk(" - data %02X %02X %02X %02X %02X %02X %02X %02X \n",
-		data->rd_data[0], data->rd_data[1],
-		data->rd_data[2], data->rd_data[3],
-		data->rd_data[4], data->rd_data[5],
-		data->rd_data[6], data->rd_data[7]
-	);
+
+	uint8_t rsp[N_RSP] = {0};
+	memcpy(rsp, &data->rd_data[N_RD], N_RSP);
+
+	if( tmc_uart_crc_check(rsp) ) {
+		printk( "UART CRC error\n");
+		return ret;
+	}
+
+	// get data
+	memcpy(value, &rsp[N_RSP-5], 4);
+
 
 #elif CONFIG_UART_INTERRUPT_DRIVEN
 	// interrupts
@@ -182,7 +177,7 @@ int uart_read_register(const struct device *dev, uint8_t slave, uint8_t reg, uin
 
 #else
 	// polling
-	i=0;
+	int i=0;
 	while(i<8) {
 		ret = uart_poll_in(cfg->uart_dev, &data->rd_data[i]);
 
@@ -216,11 +211,13 @@ int uart_write_register(const struct device *dev, uint8_t slave, uint8_t reg, ui
 	};
 	tmc_uart_crc(tx_buf, N_WR);
 
-//	k_sem_take(&tx_done, K_FOREVER);
-//	uart_tx(cfg->uart, tx_buf, sizeof(tx_buf), 100 * USEC_PER_MSEC); // SYS_FOREVER_US);
+#if CONFIG_UART_ASYNC_API
+	k_sem_take(&tx_done, K_FOREVER);
+	uart_tx(cfg->uart_dev, tx_buf, sizeof(tx_buf), 100 * USEC_PER_MSEC); // SYS_FOREVER_US);
 	// wait for TX complete
-//	k_sem_take(&tx_done, K_MSEC(1000));
-//	k_sem_give(&tx_done);
+	k_sem_take(&tx_done, K_MSEC(1000));
+	k_sem_give(&tx_done);
+#endif
 
 	return 0;
 }
@@ -297,9 +294,6 @@ void tmc_uart_cb_dma(const struct device *uart_dev, struct uart_event *evt, void
 	switch (evt->type) {
 	case UART_TX_DONE:
 		k_sem_give(&tx_done);
-		break;
-	case UART_TX_ABORTED:
-		//(*(uint32_t *)user_data)++;
 		break;
 	case UART_RX_RDY:
 		k_sem_give(&rx_rdy);

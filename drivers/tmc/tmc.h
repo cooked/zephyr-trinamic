@@ -34,12 +34,13 @@ struct tmc_data {
 #if CONFIG_TMC_UART
 
 	// async
-	//uint8_t tx_buf[8];
-	//uint8_t rx_buf[8];
+	uint8_t tx_buf[8];
+	uint8_t rx_buf[8];
 
 	uint8_t rd_data[16];
 	uint32_t data;			// Register data (payload in response message)
 
+	uint8_t tx_bytes;	// transferred bytes
 	uint8_t xfer_bytes;	// transferred bytes
 	uint8_t msg_bytes;	// msg length (set at runtime )
 
@@ -62,8 +63,8 @@ struct tmc_config {
 #endif
 #if CONFIG_TMC_UART
 	const struct device *uart_dev;
-	uart_irq_callback_user_data_t cb;
-	//uart_callback_t cb_dma;
+	//uart_irq_callback_user_data_t cb;
+	uart_callback_t cb;
 #endif
 
 	uint8_t slave;

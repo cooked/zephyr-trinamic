@@ -62,17 +62,27 @@ static int tmc5160_init(const struct device *dev)
 	// TODO: here we should initialize all slave... maybe with the addressing first
 	//tmc_init(dev, 0);
 
-	//uart_irq_rx_disable(cfg->uart_dev);
-	//uart_irq_tx_disable(cfg->uart_dev);
+#ifdef CONFIG_UART_INTERRUPT_DRIVEN
+	uart_irq_rx_disable(cfg->uart_dev);
+	uart_irq_tx_disable(cfg->uart_dev);
 
-	//tmc_uart_flush(cfg->uart_dev);
+	tmc_uart_flush(cfg->uart_dev);
 
 	//uart_irq_callback_user_data_set(cfg->uart_dev, cfg->cb, (void *)dev);
 
-	//k_sem_init(&data->rx_sem, 0, 1);
-	//k_sem_init(&data->tx_sem, 1, 1);
+	k_sem_init(&data->rx_sem, 1, 1);
+	k_sem_init(&data->tx_sem, 1, 1);
 
 	data->xfer_bytes = 0;
+
+	uart_irq_rx_enable(cfg->uart_dev);
+
+#elif CONFIG_UART_ASYNC_API
+
+	tmc_uart_init(dev);
+
+#endif
+
 
 #endif
 
@@ -310,10 +320,10 @@ static const struct sensor_driver_api tmc5160_api = {
 		COND_CODE_1(DT_INST_ON_BUS(inst, uart),						\
 			    (													\
 			     .uart_dev = DEVICE_DT_GET(DT_INST_BUS(inst)), 		\
-				 .cb = tmc_uart_isr,								\
+				 .cb = tmc_uart_cb_dma,									\
 				),													\
 			    ())													\
-		.rotation_distance = DT_INST_PROP(inst, rotation_distance), 	\
+		.rotation_distance = DT_INST_PROP(inst, rotation_distance), \
 	};						\
 							\
 	DEVICE_DT_INST_DEFINE(inst, 						\

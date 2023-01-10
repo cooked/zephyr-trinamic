@@ -1,0 +1,28 @@
+/*
+ * Copyright (c) 2022 Stefano Cottafavi
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/ {
+	aliases {
+	   uart1 = &usart1;
+	   uart2 = &usart3;
+   };
+};
+
+&usart1 {
+	single-wire;
+	pinctrl-0 = <&usart1_tx_pa9>;
+};
+
+&usart2 {
+	// !!! default ST-LINK / debug port (zephyr console),
+	// do not use here
+};
+
+&usart3 {
+	single-wire;
+	pinctrl-0 = <&usart3_tx_pb10>;
+	status = "okay";
+};

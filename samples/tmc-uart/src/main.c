@@ -61,8 +61,9 @@ void main(void)
 			}
 		}
 
+		printk( "LOOP \n");
 		//tmc_reg_write(tmc0, 0, reg, 1);
-		//tmc_reg_read(tmc0, 0, TMC5160_IFCNT, &data);
+		tmc_reg_read(tmc0, 0, TMC5160_IFCNT, &data);
 		//printk( "Count %u - Register value: 0x%08X \n", count, data);
 
 		toggle = !toggle;

@@ -26,11 +26,11 @@
 
 
 void tmc_uart_flush(const struct device *uart_dev);
-void tmc_uart_isr(const struct device *uart_dev, void *user_data);
 
+void tmc_uart_cb(const struct device *uart_dev, void *user_data);
+void tmc_uart_cb_dma(const struct device *uart_dev, struct uart_event *evt, void *user_data);
 
-
-int uart_init(const struct device *dev);
+int tmc_uart_init(const struct device *dev);
 
 int uart_read_register(const struct device *dev, uint8_t slave, uint8_t reg, uint8_t *value);
 int uart_write_register(const struct device *dev, uint8_t slave, uint8_t reg, uint32_t value);
@@ -38,9 +38,5 @@ int uart_write_register(const struct device *dev, uint8_t slave, uint8_t reg, ui
 void uart_discover(const struct device *uart);
 void uart_load_slave_map(const struct device *uart);
 
-//void uart_cb(const struct device *uart, void *user_data);
-void uart_cb_dma(const struct device *uart, struct uart_event *evt, void *user_data);
-
-void uart_flush(const struct device *uart_dev);
 
 #endif /* ZEPHYR_DRIVERS_TMC_UART_H_ */

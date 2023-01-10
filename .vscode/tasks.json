@@ -6,7 +6,6 @@
 
 		{
 			"label": "Build printHAT v1",
-			"detail": "Builds printHAT sample",
 			"type": "shell",
 			"group": "build",
 			"command": "west",
@@ -19,7 +18,6 @@
 		},
 		{
 			"label": "Build printHAT v2",
-			"detail": "Builds printHAT sample",
 			"type": "shell",
 			"group": "build",
 			"command": "west",
@@ -33,7 +31,6 @@
 
 		{
 			"label": "Build TMC SPI sample",
-			"detail": "Builds TMC SPI sample",
 			"type": "shell",
 			"group": "build",
 			"command": "west",
@@ -46,7 +43,6 @@
 		},
 		{
 			"label": "Build TMC UART sample",
-			"detail": "Build TMC UART sample",
 			"type": "shell",
 			"group": "build",
 			"command": "west",
@@ -59,7 +55,6 @@
 		},
 		{
 			"label": "Build single-wire",
-			"detail": "Build single-wire",
 			"type": "shell",
 			"group": "build",
 			"command": "west",
@@ -68,6 +63,18 @@
 				"-p", "always",
 				"-b", "nucleo_f103rb",
 				"${workspaceFolder}/samples/single-wire"
+			]
+		},
+		{
+			"label": "Build single-wire INT",
+			"type": "shell",
+			"group": "build",
+			"command": "west",
+			"args": [
+				"build",
+				"-p", "always",
+				"-b", "nucleo_f103rb",
+				"${workspaceFolder}/samples/single-wire-irq"
 			]
 		},
 

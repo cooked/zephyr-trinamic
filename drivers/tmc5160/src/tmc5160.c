@@ -37,13 +37,13 @@ extern struct reg regs[];
 
 
 // TODO: replace with system utils
-uint32_t assemble_32(uint8_t *p_data) {
+/*uint32_t assemble_32(uint8_t *p_data) {
 	int i;
 	uint32_t result = p_data[0];
 	for (i = 1; i < 4; i++)
 		result = (result << 8) + p_data[i];
 	return result;
-}
+}*/
 
 static int tmc5160_init(const struct device *dev)
 {
@@ -60,9 +60,9 @@ static int tmc5160_init(const struct device *dev)
 #elif CONFIG_TMC_UART
 	//uart_init(dev);
 	// TODO: here we should initialize all slave... maybe with the addressing first
-	//tmc_init(dev, 0);
+	tmc_init(dev, 0);
 
-#ifdef CONFIG_UART_INTERRUPT_DRIVEN
+/*#if CONFIG_UART_INTERRUPT_DRIVEN
 	uart_irq_rx_disable(cfg->uart_dev);
 	uart_irq_tx_disable(cfg->uart_dev);
 
@@ -81,7 +81,7 @@ static int tmc5160_init(const struct device *dev)
 
 	tmc_uart_init(dev);
 
-#endif
+#endif*/
 
 
 #endif
@@ -103,9 +103,7 @@ uint8_t tmc_reg_read(const struct device *dev, uint8_t slave, uint8_t reg, uint3
 	//sys_be32_to_cpu();
 	*data = assemble_32(&buf[1]);
 #elif CONFIG_TMC_UART
-	uint8_t buf[8] = {0};
-	uart_read_register(dev, slave, reg, buf);
-	*data = assemble_32(&buf[3]);
+	uart_read_register(dev, slave, reg, data);
 #endif
 
 	return 0;
@@ -118,7 +116,7 @@ uint8_t tmc_reg_write(const struct device *dev, uint8_t slave, uint8_t reg, uint
 #if CONFIG_TMC_SPI
 	spi_write_register( &(cfg->spi), reg, value);
 #elif CONFIG_TMC_UART
-	uart_write_register( cfg->uart_dev, slave, reg, value );
+	uart_write_register( dev, slave, reg, value );
 #endif
 
 	return 0;
@@ -132,15 +130,15 @@ int tmc_init(const struct device *dev, uint8_t slave) {
 	//tmc_reg_write(dev, slave, TMC5160_CHOPCONF, 	0x000100C3	); // CHOPCONF: TOFF=3, HSTRT=4, HEND=1, TBL=2, CHM=0 (SpreadCycle)
 
 	// write only
-	//tmc_set_irun_ihold(dev, slave, cfg->run_current, cfg->hold_current);
+	tmc_set_irun_ihold(dev, slave, cfg->run_current, cfg->hold_current);
 
 	//tmc_reg_write(dev, slave, TMC5160_TPOWERDOWN, 	0x0000000A); // TPOWERDOWN=10: Delay before power down in stand still
 	//tmc_reg_write(dev, slave, TMC5160_GCONF, 		0x00000004); // EN_PWM_MODE=1 enables StealthChop (with default PWM_CONF)
 	//tmc_reg_write(dev, slave, TMC5160_TPWMTHRS, 	0x000001F4); // TPWM_THRS=500 yields a switching velocity about 35000 = ca. 30RPM
 
 	// prevent motion
-	//tmc_reg_write(dev, slave, TMC5160_XTARGET,		0);
-	//tmc_reg_write(dev, slave, TMC5160_XACTUAL,		0);
+	tmc_reg_write(dev, slave, TMC5160_XTARGET,		0);
+	tmc_reg_write(dev, slave, TMC5160_XACTUAL,		0);
 
 	// add some ramp init
 	// see DS pag. 116 Getting Started
@@ -235,6 +233,11 @@ void tmc_set_irun_ihold(const struct device *dev, uint8_t slave, uint8_t irun, u
 	tmc_reg_write(dev, slave, TMC5160_IHOLD_IRUN, 	data);
 
 }
+
+void tmc_set_mode(const struct device *dev, uint8_t slave, uint8_t mode) {
+	tmc_reg_write(dev, slave, TMC5160_RAMPMODE,	mode);
+}
+
 // ramp
 int32_t tmc_get_xtarget(const struct device *dev, uint8_t slave) {
 

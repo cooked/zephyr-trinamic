@@ -8,6 +8,7 @@
 
 #include <string.h> // memcpy
 #include <zephyr/drivers/uart.h>
+#include <zephyr/sys/byteorder.h>	// sys_to_xxx()
 
 #include "tmc.h"
 #include "tmc_uart.h"
@@ -82,7 +83,7 @@ int tmc_uart_init(const struct device *dev) {
 	return 0;
 }
 
-int uart_read_register(const struct device *dev, uint8_t slave, uint8_t reg, uint8_t *value) {
+int uart_read_register(const struct device *dev, uint8_t slave, uint8_t reg, uint32_t *value) {
 
 	const struct tmc_config *cfg = dev->config;
 	struct tmc_data *data = dev->data;
@@ -101,7 +102,7 @@ int uart_read_register(const struct device *dev, uint8_t slave, uint8_t reg, uin
 	uint8_t tx_buf[N_RD] = { SYNC_NIBBLE, slave, reg, 0 };
 	tmc_uart_crc(tx_buf, N_RD);
 
-
+/*
 #if CONFIG_UART_ASYNC_API
 	// DMA
 
@@ -175,23 +176,41 @@ int uart_read_register(const struct device *dev, uint8_t slave, uint8_t reg, uin
 	k_sem_give(&data->rx_sem);
 	//memcpy(&value, &data->rd_data[N_RSP_SHIFT], 4);
 
-#else
+#else*/
+	uint8_t buf;
 	// polling
-	int i=0;
-	while(i<8) {
-		ret = uart_poll_in(cfg->uart_dev, &data->rd_data[i]);
 
-		if( ret ) {
-			k_usleep(10);
-			printk("err\n");
-		} else {
-			printk(" %02X ", data->rd_data[i]);
-			i++;
+	// send command
+	int i;
+	for(i=0; i<N_RD; i++) {
+		uart_poll_out(cfg->uart_dev, tx_buf[i]);
+		while( uart_poll_in(cfg->uart_dev, &buf)) {
 		}
 	}
-	printk("\n");
 
-#endif
+	// get response
+	for(i=0; i<N_RSP; i++) {
+		while( uart_poll_in(cfg->uart_dev, &data->rd_data[i])) {
+		}
+	}
+
+	// check CRC
+	if( tmc_uart_crc_check(data->rd_data) ) {
+		printk( "UART CRC error\n");
+		return -1;
+	}
+
+	// extract data
+	uint32_t val = sys_get_be32(&data->rd_data[3]);
+	memcpy(value, &val, 4);
+	/*printk(" - data %02X %02X %02X %02X %02X %02X %02X %02X \n",
+		data->rd_data[0], data->rd_data[1],
+		data->rd_data[2], data->rd_data[3],
+		data->rd_data[4], data->rd_data[5],
+		data->rd_data[6], data->rd_data[7]
+	);*/
+
+//#endif
 
 	return ret;
 
@@ -206,18 +225,29 @@ int uart_write_register(const struct device *dev, uint8_t slave, uint8_t reg, ui
 		SYNC_NIBBLE,
 		slave,
 		REG_WRITE_BIT | reg,
-		value >> 24, value >> 16, value >> 8, value,
+		0,//value >> 24, value >> 16, value >> 8, value,
 		0
 	};
+	sys_put_be32(value, &tx_buf[3]);
 	tmc_uart_crc(tx_buf, N_WR);
 
-#if CONFIG_UART_ASYNC_API
+/*#if CONFIG_UART_ASYNC_API
 	k_sem_take(&tx_done, K_FOREVER);
 	uart_tx(cfg->uart_dev, tx_buf, sizeof(tx_buf), 100 * USEC_PER_MSEC); // SYS_FOREVER_US);
 	// wait for TX complete
 	k_sem_take(&tx_done, K_MSEC(1000));
 	k_sem_give(&tx_done);
-#endif
+#endif*/
+
+	uint8_t buf;
+
+	// send command
+	int i;
+	for(i=0; i<N_WR; i++) {
+		uart_poll_out(cfg->uart_dev, tx_buf[i]);
+		while(uart_poll_in(cfg->uart_dev, &buf)) {
+		}
+	}
 
 	return 0;
 }

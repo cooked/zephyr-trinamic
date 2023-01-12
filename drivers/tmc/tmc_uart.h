@@ -32,7 +32,7 @@ void tmc_uart_cb_dma(const struct device *uart_dev, struct uart_event *evt, void
 
 int tmc_uart_init(const struct device *dev);
 
-int uart_read_register(const struct device *dev, uint8_t slave, uint8_t reg, uint8_t *value);
+int uart_read_register(const struct device *dev, uint8_t slave, uint8_t reg, uint32_t *value);
 int uart_write_register(const struct device *dev, uint8_t slave, uint8_t reg, uint32_t value);
 
 void uart_discover(const struct device *uart);

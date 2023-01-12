@@ -119,6 +119,7 @@ uint8_t tmc_reg_write(const struct device *dev, uint8_t slave, uint8_t reg, uint
 int32_t tmc_get(const struct device *dev, uint8_t slave, char *key);
 void 	tmc_set(const struct device *dev, uint8_t slave, char *key, int32_t value);
 
+void 	tmc_set_mode(const struct device *dev, uint8_t slave, uint8_t mode);
 //
 int 	tmc_init(const struct device *dev, uint8_t slave);
 void 	tmc_set_irun_ihold(const struct device *dev, uint8_t slave, uint8_t irun, uint8_t ihold);

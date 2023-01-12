@@ -20,7 +20,10 @@ extern uint8_t slave;
 
 static int cmd_tmc_mode(const struct shell *shell, size_t argc, char *argv[])
 {
-    shell_fprintf(shell, SHELL_NORMAL, "TMC query <field_name>: %d\n", 0);
+	uint8_t mode = (uint8_t) strtol(argv[3], &argv[3], 10);
+
+	tmc_set_mode(tmc0, 0, mode);
+
     return 0;
 }
 static int cmd_tmc_turn(const struct shell *shell, size_t argc, char *argv[])

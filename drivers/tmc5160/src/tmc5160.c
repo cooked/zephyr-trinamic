@@ -36,15 +36,6 @@ extern struct field fields[];
 extern struct reg regs[];
 
 
-// TODO: replace with system utils
-/*uint32_t assemble_32(uint8_t *p_data) {
-	int i;
-	uint32_t result = p_data[0];
-	for (i = 1; i < 4; i++)
-		result = (result << 8) + p_data[i];
-	return result;
-}*/
-
 static int tmc5160_init(const struct device *dev)
 {
 	struct tmc_data *data = dev->data;
@@ -52,17 +43,19 @@ static int tmc5160_init(const struct device *dev)
 
 	int res = 0;
 
+	LOG_DBG("TMC5160 INIT");
+
 #if CONFIG_TMC_SPI
 	if (!spi_is_ready(&cfg->spi)) {
 		LOG_ERR("SPI bus is not ready");
 		return -ENODEV;
 	}
 #elif CONFIG_TMC_UART
-	//uart_init(dev);
-	// TODO: here we should initialize all slave... maybe with the addressing first
-	tmc_init(dev, 0);
 
-/*#if CONFIG_UART_INTERRUPT_DRIVEN
+#if CONFIG_UART_INTERRUPT_DRIVEN
+
+	LOG_DBG("TMC UART irq-mode \n");
+
 	uart_irq_rx_disable(cfg->uart_dev);
 	uart_irq_tx_disable(cfg->uart_dev);
 
@@ -79,14 +72,22 @@ static int tmc5160_init(const struct device *dev)
 
 #elif CONFIG_UART_ASYNC_API
 
-	tmc_uart_init(dev);
+	LOG_DBG("TMC UART dma-mode \n");
+	//tmc_uart_init(dev);
 
-#endif*/
+#else
 
+	LOG_DBG("TMC UART poll-mode \n");
+	//tmc_uart_init(dev);
 
 #endif
 
-	LOG_INF("tmc5160_init done");
+	// TODO: here we should initialize all slave... maybe with the addressing first
+	tmc_init(dev, 0);
+
+#endif
+
+	LOG_DBG("tmc5160_init done");
 
 	return res;
 }

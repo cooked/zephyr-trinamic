@@ -178,9 +178,8 @@ int uart_read_register(const struct device *dev, uint8_t slave, uint8_t reg, uin
 
 #else*/
 	uint8_t buf;
-	// polling
 
-	// send command
+	// command
 	int i;
 	for(i=0; i<N_RD; i++) {
 		uart_poll_out(cfg->uart_dev, tx_buf[i]);
@@ -188,27 +187,21 @@ int uart_read_register(const struct device *dev, uint8_t slave, uint8_t reg, uin
 		}
 	}
 
-	// get response
+	// response
 	for(i=0; i<N_RSP; i++) {
 		while( uart_poll_in(cfg->uart_dev, &data->rd_data[i])) {
 		}
 	}
 
-	// check CRC
+	// check
 	if( tmc_uart_crc_check(data->rd_data) ) {
 		printk( "UART CRC error\n");
 		return -1;
 	}
 
-	// extract data
+	// unpack
 	uint32_t val = sys_get_be32(&data->rd_data[3]);
 	memcpy(value, &val, 4);
-	/*printk(" - data %02X %02X %02X %02X %02X %02X %02X %02X \n",
-		data->rd_data[0], data->rd_data[1],
-		data->rd_data[2], data->rd_data[3],
-		data->rd_data[4], data->rd_data[5],
-		data->rd_data[6], data->rd_data[7]
-	);*/
 
 //#endif
 
@@ -221,13 +214,7 @@ int uart_write_register(const struct device *dev, uint8_t slave, uint8_t reg, ui
 	const struct tmc_config *cfg = dev->config;
 	struct tmc_data *data = dev->data;
 
-	uint8_t tx_buf[N_WR] = {
-		SYNC_NIBBLE,
-		slave,
-		REG_WRITE_BIT | reg,
-		0,//value >> 24, value >> 16, value >> 8, value,
-		0
-	};
+	uint8_t tx_buf[N_WR] = { SYNC_NIBBLE, slave, REG_WRITE_BIT | reg, 0, 0 };
 	sys_put_be32(value, &tx_buf[3]);
 	tmc_uart_crc(tx_buf, N_WR);
 

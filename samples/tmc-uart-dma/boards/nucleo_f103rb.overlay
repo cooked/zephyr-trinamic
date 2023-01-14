@@ -1,0 +1,45 @@
+/*
+ * Copyright (c) 2022, Stefano Cottafavi <stefano.cottafavi@gmail.com>
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+ #include <zephyr/dt-bindings/pinctrl/stm32f1-pinctrl.h>
+
+/ {
+	aliases {
+	   uart1 = &usart1;
+	   uart2 = &usart2;
+	   tmc0 = &tmc_0;
+   };
+};
+
+// see https://github.com/zephyrproject-rtos/zephyr/blob/db3f8c16e9c95801961a433c07f481bfcb385466/tests/drivers/uart/uart_async_api/boards/nucleo_f103rb.overlay
+&dma1 {
+	//status = "okay";
+};
+
+// USART1 tx:PA9 rx:PA10
+// USART2 tx:PA2 rx:PA3
+// USART3 tx:PB10 rx:PB11
+&usart1 {
+
+	/*dmas = <&dma1 4 0x440>,
+			<&dma1 5 0x480>;
+	dma-names = "tx", "rx";
+	*/
+
+	single-wire;
+	pinctrl-0 = <&usart1_tx_pa9>;
+
+	tmc_0:tmc5160 {
+		compatible = "trinamic,tmc5160";
+		status = "okay";
+	};
+};
+
+
+&usart2 {
+	// !!! default ST-LINK / debug port (hence also zephyr console), don't use
+	// it for TMC
+};

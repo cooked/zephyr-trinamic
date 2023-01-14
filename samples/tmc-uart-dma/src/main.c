@@ -23,12 +23,12 @@ struct gpio_dt_spec led = GPIO_DT_SPEC_GET( DT_ALIAS(led0), gpios);
 
 const struct device *uart1 = DEVICE_DT_GET(UART_NODE1);
 const struct device *uart2 = DEVICE_DT_GET(UART_NODE2);
+//const struct device *uart3 = DEVICE_DT_GET(UART_NODE3);
 
 void main(void)
 {
 	// config UARTs
-	if (!device_is_ready(uart1) ||
-		!device_is_ready(uart2)) {
+	if (!device_is_ready(uart1) || !device_is_ready(uart2)) {
 		printk("uart devices not ready\n");
 		return;
 	}
@@ -46,6 +46,12 @@ void main(void)
 	if( gpio_pin_configure_dt(&led, GPIO_OUTPUT_ACTIVE) < 0 ) {
 		return;
 	}
+	toggle = 1;
+
+	uint8_t reg = TMC5160_GSTAT;
+	//reg = TMC5160_INP_OUT;
+	reg = TMC5160_RAMPMODE;
+	uint32_t count = 0, data;
 
 	while (1) {
 
@@ -58,8 +64,9 @@ void main(void)
 		//tmc_reg_write(tmc0, 0, reg, 1);
 		//tmc_reg_read(tmc0, 0, TMC5160_IFCNT, &data);
 		//printk( "Count %u - Register value: 0x%08X \n", count, data);
-		printk("Toggle: %d\n", toggle);
+
 		toggle = !toggle;
+		count++;
 
 		k_sleep(K_MSEC(SLEEP_TIME_MS));
 	}

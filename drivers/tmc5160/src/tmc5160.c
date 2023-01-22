@@ -8,7 +8,6 @@
 // https://stackoverflow.com/questions/72294929/location-of-source-file-include-drivers-gpio-h
 
 #include <zephyr/device.h>
-#include <zephyr/devicetree.h>
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/sensor.h>
 #include <zephyr/sys/util.h>
@@ -25,7 +24,6 @@
 #include "tmc_uart.h"
 #endif
 
-// piggyback on SPI log level for now
 #include <zephyr/logging/log.h>
 
 LOG_MODULE_REGISTER(TMC5160, CONFIG_SENSOR_LOG_LEVEL);
@@ -35,6 +33,25 @@ LOG_MODULE_REGISTER(TMC5160, CONFIG_SENSOR_LOG_LEVEL);
 extern struct field fields[];
 extern struct reg regs[];
 
+int tmc_test_ramp_speed(const struct device *dev, uint8_t slave) {
+
+	// see DS p.116 Getting Started
+
+	const struct tmc_config *cfg = dev->config;
+
+	tmc_reg_write(dev, slave, TMC5160_GSTAT, 		0x7			); // clear errors
+	tmc_reg_write(dev, slave, TMC5160_CHOPCONF, 	0x000100C5	); // CHOPCONF: TOFF=3, HSTRT=4, HEND=1, TBL=2, CHM=0 (SpreadCycle)
+
+	tmc_set_irun_ihold(dev, slave, cfg->run_current, cfg->hold_current); // write only
+
+	tmc_reg_write(dev, slave, TMC5160_AMAX, 		5000);
+	tmc_reg_write(dev, slave, TMC5160_VMAX, 		20000);
+
+	tmc_reg_write(dev, slave, TMC5160_RAMPMODE,		1);	// pos velocity mode
+
+	return 0;
+
+}
 
 static int tmc5160_init(const struct device *dev)
 {
@@ -82,8 +99,10 @@ static int tmc5160_init(const struct device *dev)
 
 #endif
 
-	// TODO: here we should initialize all slave... maybe with the addressing first
-	tmc_init(dev, 0);
+	// TODO: here we should initialize all slave... maybe with the addressing
+	// first
+	//tmc_init(dev, 0);
+	tmc_test_ramp_speed(dev, 0);
 
 #endif
 
@@ -109,7 +128,6 @@ uint8_t tmc_reg_read(const struct device *dev, uint8_t slave, uint8_t reg, uint3
 
 	return 0;
 }
-
 uint8_t tmc_reg_write(const struct device *dev, uint8_t slave, uint8_t reg, uint32_t value) {
 
 	const struct tmc_config *cfg = dev->config;
@@ -133,7 +151,7 @@ int tmc_init(const struct device *dev, uint8_t slave) {
 	// write only
 	tmc_set_irun_ihold(dev, slave, cfg->run_current, cfg->hold_current);
 
-	//tmc_reg_write(dev, slave, TMC5160_TPOWERDOWN, 	0x0000000A); // TPOWERDOWN=10: Delay before power down in stand still
+	//tmc_reg_write(dev, slave, TMC5160_TPOWERDOWN, 0x0000000A); // TPOWERDOWN=10: Delay before power down in stand still
 	//tmc_reg_write(dev, slave, TMC5160_GCONF, 		0x00000004); // EN_PWM_MODE=1 enables StealthChop (with default PWM_CONF)
 	//tmc_reg_write(dev, slave, TMC5160_TPWMTHRS, 	0x000001F4); // TPWM_THRS=500 yields a switching velocity about 35000 = ca. 30RPM
 

@@ -25,6 +25,7 @@ K_SEM_DEFINE(rx_disabled, 1, 1);
 //K_SEM_DEFINE(rx_sem, 1, 1);
 
 void tmc_uart_crc(uint8_t *data, uint8_t data_len) {
+
 	int i,j;
 	uint8_t *crc = data + (data_len-1); // CRC located in last byte of message
 	uint8_t currentByte;
@@ -214,7 +215,9 @@ int uart_write_register(const struct device *dev, uint8_t slave, uint8_t reg, ui
 	const struct tmc_config *cfg = dev->config;
 	struct tmc_data *data = dev->data;
 
-	uint8_t tx_buf[N_WR] = { SYNC_NIBBLE, slave, REG_WRITE_BIT | reg, 0, 0 };
+	uint8_t tx_buf[N_WR] = { SYNC_NIBBLE, slave, REG_WRITE_BIT | reg,
+		0,0,0,0, 0
+	};
 	sys_put_be32(value, &tx_buf[3]);
 	tmc_uart_crc(tx_buf, N_WR);
 
@@ -229,8 +232,7 @@ int uart_write_register(const struct device *dev, uint8_t slave, uint8_t reg, ui
 	uint8_t buf;
 
 	// send command
-	int i;
-	for(i=0; i<N_WR; i++) {
+	for(int i=0; i<N_WR; i++) {
 		uart_poll_out(cfg->uart_dev, tx_buf[i]);
 		while(uart_poll_in(cfg->uart_dev, &buf)) {
 		}

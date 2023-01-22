@@ -4,19 +4,20 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <stdlib.h>
+//#include <stdlib.h>
 #include <zephyr/shell/shell.h>
 
+//#include "tmc.h"
 #include "tmc_shell.h"
 
 extern bool toggle;
-extern const struct device *tmc0;
+//extern const struct device *tmc0;
 
-extern struct field fields[];
+//extern struct field fields[];
 
 uint8_t slave = 0;
 
-static int cmd_tmc_get(const struct shell *shell, size_t argc, char *argv[])
+/*static int cmd_tmc_get(const struct shell *shell, size_t argc, char *argv[])
 {
 
 	if(argc!=4)
@@ -27,7 +28,7 @@ static int cmd_tmc_get(const struct shell *shell, size_t argc, char *argv[])
 	char *fname = argv[3];
 	attr f = get_field(fname, fields);
 
-	tmc_reg_read(tmc0, slave, f.reg, &data);
+	//tmc_reg_read(tmc0, slave, f.reg, &data);
 
 	shell_fprintf(shell, SHELL_NORMAL,
 		"GET - Field '%s' (reg 0x%02X) value: %u \n", fname, f.reg, (data&f.mask)>>f.shift);
@@ -47,10 +48,10 @@ static int cmd_tmc_set(const struct shell *shell, size_t argc, char *argv[])
 
 	int32_t val = strtol(argv[CMD_ARG_N+3], &argv[CMD_ARG_N+3], 10);
 
-	tmc_reg_read(tmc0, slave, f.reg, &data);
+	//tmc_reg_read(tmc0, slave, f.reg, &data);
 	data &= ~f.mask;
 	data |= val<<f.shift;
-	tmc_reg_write(tmc0, slave, f.reg, data);
+	//tmc_reg_write(tmc0, slave, f.reg, data);
 
 	//tmc_reg_write(tmc0, slave, f.reg, val);
 
@@ -59,12 +60,12 @@ static int cmd_tmc_set(const struct shell *shell, size_t argc, char *argv[])
 
 
     return 0;
-}
+}*/
 static int cmd_tmc_dump(const struct shell *shell, size_t argc, char *argv[])
 {
 
     shell_fprintf(shell, SHELL_NORMAL, "TMC dump slave %d registers: \n", slave);
-	tmc_dump(tmc0, slave);
+	//tmc_dump(tmc0, slave);
 
 	return 0;
 }
@@ -72,7 +73,7 @@ static int cmd_tmc_init(const struct shell *shell, size_t argc, char *argv[])
 {
 	shell_fprintf(shell, SHELL_NORMAL, "TMC init slave %u in POS mode \n", slave);
 
-	tmc_init(tmc0, slave);
+	//tmc_init(tmc0, slave);
 
     return 0;
 }
@@ -88,7 +89,7 @@ static int cmd_tmc_run(const struct shell *shell, size_t argc, char *argv[])
 
 	slave = (uint8_t) strtol(argv[CMD_ARG_N], &argv[CMD_ARG_N], 10);
 
-	tmc_run(tmc0, slave, rpm, acc);
+	//tmc_run(tmc0, slave, rpm, acc);
 
 	shell_fprintf(shell, SHELL_NORMAL, "Run motor at %d rpm\n", rpm);
 
@@ -102,7 +103,7 @@ static int cmd_tmc_cur(const struct shell *shell, size_t argc, char *argv[])
 
 	slave = (uint8_t) strtol(argv[CMD_ARG_N], &argv[CMD_ARG_N], 10);
 
-	tmc_set_irun_ihold(tmc0, slave, irun, ihold);
+	//tmc_set_irun_ihold(tmc0, slave, irun, ihold);
 
 	shell_fprintf(shell, SHELL_NORMAL, "Set TMC current I_RUN: %u, I_HOLD: %u \n", irun, ihold);
 
@@ -122,7 +123,7 @@ int cmd_tmc(const struct shell *shell, size_t argc, char *argv[])
 	} else if( strcmp(subcmd,"dump")==0 ) {
 		return cmd_tmc_dump(shell, argc, argv);
 
-	} else if( strcmp(subcmd,"get")==0 ) {
+	} /*else if( strcmp(subcmd,"get")==0 ) {
 		return cmd_tmc_get(shell, argc, argv);
 
 	} else if( strcmp(subcmd,"set")==0 ) {
@@ -134,7 +135,7 @@ int cmd_tmc(const struct shell *shell, size_t argc, char *argv[])
 	} else if( strcmp(subcmd,"run")==0 ) {
 		return cmd_tmc_run(shell, argc, argv);
 
-	}
+	}*/
 
     return -EINVAL;
 

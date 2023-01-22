@@ -4,19 +4,19 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <stdlib.h>
+//#include <stdlib.h>
 #include <zephyr/shell/shell.h>
 
 #include "tmc.h"
 #include "tmc_shell.h"
 #include "tmc5160.h"
 
-extern bool toggle;
+//extern bool toggle;
 extern const struct device *tmc0;
 
-extern struct field fields[];
+//extern struct field fields[];
 
-extern uint8_t slave;
+//extern uint8_t slave;
 
 static int cmd_tmc_mode(const struct shell *shell, size_t argc, char *argv[])
 {
@@ -26,7 +26,7 @@ static int cmd_tmc_mode(const struct shell *shell, size_t argc, char *argv[])
 
     return 0;
 }
-static int cmd_tmc_turn(const struct shell *shell, size_t argc, char *argv[])
+/*static int cmd_tmc_turn(const struct shell *shell, size_t argc, char *argv[])
 {
 
 	slave = (uint8_t) strtol(argv[CMD_ARG_N], &argv[CMD_ARG_N], 10);
@@ -66,10 +66,10 @@ static int cmd_tmc_goto(const struct shell *shell, size_t argc, char *argv[])
 	//tmc_set_xtarget(tmc, slave, steps);
 
 	return 0;
-}
+}*/
 
 
-SHELL_STATIC_SUBCMD_SET_CREATE( tmc_cmds,
+/*SHELL_STATIC_SUBCMD_SET_CREATE( tmc_cmds,
 	// set mode (ramp or velocity)
 	SHELL_CMD_ARG(mode, NULL, "Set TMC mode of operation. ($ tmc mode <slave> <0/1> // 0:velocity 1:ramp)",
 		cmd_tmc_mode, 2, 0),
@@ -78,26 +78,26 @@ SHELL_STATIC_SUBCMD_SET_CREATE( tmc_cmds,
 	SHELL_CMD_ARG(goto, NULL,	"Move TMC to position",
 		cmd_tmc_goto, 2, 0),
 	SHELL_SUBCMD_SET_END
-);
+);*/
 
 static int cmd_tmc5160(const struct shell *shell, size_t argc, char *argv[])
 {
 	// if generic tmc command we're done
-	if( cmd_tmc(shell, argc, argv)==0 ) {
+	/*if( cmd_tmc(shell, argc, argv)==0 ) {
 		return 0;
-	};
+	};*/
 
 	char *subcmd = argv[2];
     if( strcmp(subcmd,"mode")==0 ) {
 		return cmd_tmc_mode(shell, argc, argv);
 
-	} else if( strcmp(subcmd,"turn")==0 ) {
+	} /*else if( strcmp(subcmd,"turn")==0 ) {
 		return cmd_tmc_turn(shell, argc, argv);
 
 	} else if( strcmp(subcmd,"goto")==0 ) {
 		return cmd_tmc_goto(shell, argc, argv);
 
-	}
+	}*/
     return -EINVAL;
 
 }

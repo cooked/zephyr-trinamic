@@ -83,9 +83,9 @@ static int cmd_tmc_goto(const struct shell *shell, size_t argc, char *argv[])
 static int cmd_tmc5160(const struct shell *shell, size_t argc, char *argv[])
 {
 	// if generic tmc command we're done
-	/*if( cmd_tmc(shell, argc, argv)==0 ) {
+	if( cmd_tmc(shell, argc, argv)==0 ) {
 		return 0;
-	};*/
+	};
 
 	char *subcmd = argv[2];
     if( strcmp(subcmd,"mode")==0 ) {

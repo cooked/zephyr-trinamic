@@ -10,6 +10,7 @@
 #include <string.h>
 
 #include <zephyr/drivers/gpio.h>
+#include <zephyr/drivers/pwm.h>
 
 #ifdef CONFIG_TMC_SPI
 #include <zephyr/drivers/spi.h>
@@ -68,6 +69,9 @@ struct tmc_config {
 #endif
 
 	uint8_t slave;
+
+    struct pwm_dt_spec step;
+    struct gpio_dt_spec dir;
 
 	struct gpio_dt_spec diag0_pin;
 	struct gpio_dt_spec diag1_pin;

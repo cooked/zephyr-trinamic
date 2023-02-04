@@ -3,6 +3,16 @@
 # SPDX-License-Identifier: Apache-2.0
 
 properties:
+  pwms:
+    type: phandle-array
+    description: |
+      Step pin
+
+  dir-gpios:
+    type: phandle-array
+    description: |
+      Dir pin
+
   diag0-pin:
     type: phandles
     description: |

@@ -7,8 +7,11 @@
 // mind include path
 // https://stackoverflow.com/questions/72294929/location-of-source-file-include-drivers-gpio-h
 
+#include <stdlib.h>
+
 #include <zephyr/device.h>
 #include <zephyr/kernel.h>
+#include <zephyr/drivers/gpio.h>
 #include <zephyr/drivers/sensor.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/byteorder.h>	// sys_to_xxx()
@@ -17,6 +20,9 @@
 #include "tmc.h"
 #include "tmc5160.h"
 
+#ifdef CONFIG_TMC_SD
+#include <zephyr/drivers/pwm.h>
+#endif
 #ifdef CONFIG_TMC_SPI
 #include "tmc_spi.h"
 #endif
@@ -62,11 +68,20 @@ static int tmc5160_init(const struct device *dev)
 
 	LOG_DBG("TMC5160 INIT");
 
+	res = gpio_pin_configure_dt(&cfg->dir, GPIO_OUTPUT);
+	if (res != 0) {
+		printk("Error %d: failed to configure dir pin\n", res);
+		return;
+	}
+
 #if CONFIG_TMC_SPI
 	if (!spi_is_ready(&cfg->spi)) {
 		LOG_ERR("SPI bus is not ready");
 		return -ENODEV;
 	}
+
+	tmc_init(dev, 0);
+
 #elif CONFIG_TMC_UART
 
 #if CONFIG_UART_INTERRUPT_DRIVEN
@@ -119,9 +134,8 @@ uint8_t tmc_reg_read(const struct device *dev, uint8_t slave, uint8_t reg, uint3
 #if CONFIG_TMC_SPI
 	uint8_t buf[5] = {0};
 	spi_read_register( &(cfg->spi), reg, buf );
-	// TODO: replace with sys_to.... from byteorder.h
-	//sys_be32_to_cpu();
-	*data = assemble_32(&buf[1]);
+	//*data = assemble_32(&buf[1]);
+	*data = sys_get_be32(&buf[1]);
 #elif CONFIG_TMC_UART
 	uart_read_register(dev, slave, reg, data);
 #endif
@@ -145,22 +159,24 @@ int tmc_init(const struct device *dev, uint8_t slave) {
 
 	const struct tmc_config *cfg = dev->config;
 
-	tmc_reg_write(dev, slave, TMC5160_GSTAT, 		0x7			); // clear errors
-	//tmc_reg_write(dev, slave, TMC5160_CHOPCONF, 	0x000100C3	); // CHOPCONF: TOFF=3, HSTRT=4, HEND=1, TBL=2, CHM=0 (SpreadCycle)
+	// clear errors
+	tmc_reg_write(dev, slave, TMC5160_GSTAT, 		0x7	);
 
-	// write only
-	tmc_set_irun_ihold(dev, slave, cfg->run_current, cfg->hold_current);
+#if CONFIG_TMC_SD
+	// see DS pag. 116 Getting Started
+	tmc_reg_write(dev, slave, TMC5160_CHOPCONF, 	0x000100C3	); // CHOPCONF: TOFF=3, HSTRT=4, HEND=1, TBL=2, CHM=0 (SpreadCycle)
+	tmc_set_irun_ihold(dev, slave, cfg->run_current, cfg->hold_current); // write only
+	tmc_reg_write(dev, slave, TMC5160_TPOWERDOWN, 0x0000000A); // TPOWERDOWN=10: Delay before power down in stand still
+	tmc_reg_write(dev, slave, TMC5160_GCONF, 		0x00000004); // EN_PWM_MODE=1 enables StealthChop (with default PWM_CONF)
+	tmc_reg_write(dev, slave, TMC5160_TPWMTHRS, 	0x000001F4); // TPWM_THRS=500 yields a switching velocity about 35000 = ca. 30RPM
 
-	//tmc_reg_write(dev, slave, TMC5160_TPOWERDOWN, 0x0000000A); // TPOWERDOWN=10: Delay before power down in stand still
-	//tmc_reg_write(dev, slave, TMC5160_GCONF, 		0x00000004); // EN_PWM_MODE=1 enables StealthChop (with default PWM_CONF)
-	//tmc_reg_write(dev, slave, TMC5160_TPWMTHRS, 	0x000001F4); // TPWM_THRS=500 yields a switching velocity about 35000 = ca. 30RPM
-
+#else
+	// see DS pag. 116 Getting Started
+	tmc_set_irun_ihold(dev, slave, cfg->run_current, cfg->hold_current); // write only
 	// prevent motion
 	tmc_reg_write(dev, slave, TMC5160_XTARGET,		0);
 	tmc_reg_write(dev, slave, TMC5160_XACTUAL,		0);
-
-	// add some ramp init
-	// see DS pag. 116 Getting Started
+	// config ramp
 	tmc_reg_write(dev, slave, TMC5160_A1, 			DEFAULT_AMAX * 2);
 	tmc_reg_write(dev, slave, TMC5160_AMAX, 		DEFAULT_AMAX);
 	tmc_reg_write(dev, slave, TMC5160_V1, 			DEFAULT_VMAX / 2);
@@ -168,24 +184,37 @@ int tmc_init(const struct device *dev, uint8_t slave) {
 	tmc_reg_write(dev, slave, TMC5160_DMAX, 		DEFAULT_AMAX);
 	tmc_reg_write(dev, slave, TMC5160_D1, 			DEFAULT_AMAX * 2);
 	tmc_reg_write(dev, slave, TMC5160_VSTOP, 		DEFAULT_VSTOP);
-
 	// reset position
 	tmc_reg_write(dev, slave, TMC5160_RAMPMODE,	0);	// set position mode
-
 	tmc_reg_write(dev, slave, TMC5160_RAMPSTAT,	0);	// clear ramp status
+
+#endif
 
 	return 0;
 
 }
 void tmc_run(const struct device *dev, uint8_t slave, int32_t speed, int32_t acc) {
 
-	//const struct tmc5160_config *cfg = dev->config;
-	//printk( "rot_dist	: %f \n", cfg->rotation_distance);
-	//printk( "speed conv	: %f, %f,  %f \n", (float)speed, RPM_TO_PPS, (float)speed * RPM_TO_PPS / TMC_T);
+#if CONFIG_TMC_SD
 
+	struct tmc_config *cfg = dev->config;
+	uint32_t period_ns = 1e9 / ( abs(speed) * RPM_TO_PPS);
+
+	if(speed>0) {
+		gpio_pin_set_dt(&cfg->dir,0);
+		pwm_set_dt(&cfg->step, period_ns, (uint32_t)(period_ns/2));
+	} else if(speed<0) {
+		gpio_pin_set_dt(&cfg->dir,1);
+		pwm_set_dt(&cfg->step, period_ns, (uint32_t)(period_ns/2));
+	} else {
+		pwm_set_pulse_dt(&cfg->step, 0);
+	}
+
+#else
 	// AMAX acceleration and deceleration value in velocity mode (DS pag. 40)
-	if(acc!=0)
+	if(acc!=0) {
 		tmc_reg_write(dev, slave, TMC5160_AMAX, (uint32_t)acc );
+	}
 
 	// VMAX velocity value in velocity mode (DS pag. 40)
 	tmc_reg_write(dev, slave, TMC5160_VMAX, (uint32_t)((float)speed * RPM_TO_PPS / TMC_T) );
@@ -200,13 +229,17 @@ void tmc_run(const struct device *dev, uint8_t slave, int32_t speed, int32_t acc
 	} else {
 		// keep existing ramp_mode, but stop motion (speed=0)
 	}
+
+#endif
+
+
 }
 
 int tmc_dump(const struct device *dev, uint8_t slave) {
 
 	uint32_t data;
 
-	for(uint16_t reg = 0; reg < 1; reg++) {
+	for(uint16_t reg = 0; reg < NREG; reg++) {
 		// dump only if readable
 		if(	strchr( regs[reg].attr.rwc, 'r') ) {
 			tmc_reg_read( dev, slave, regs[reg].attr.reg, &data);
@@ -321,8 +354,6 @@ static const struct sensor_driver_api tmc5160_api = {
 
 
 // TODO:
-//.diag0_pin = GPIO_DT_SPEC_GET_OR(diag0_pin, 0),
-//.diag1_pin = GPIO_DT_SPEC_GET_OR(diag1_pin, 0),
 //.cb_dma = uart_cb_dma,
 
 #define TMC5160_DEFINE(inst)							\
@@ -334,7 +365,7 @@ static const struct sensor_driver_api tmc5160_api = {
 														\
 	static const struct tmc_config tmc_config_##inst = {			\
 		COND_CODE_1(DT_INST_ON_BUS(inst, spi),						\
-			    (\
+			    (													\
 			     .spi = SPI_DT_SPEC_INST_GET(inst, 					\
 				 SPI_OP_MODE_MASTER | SPI_TRANSFER_MSB | SPI_MODE_CPOL | SPI_MODE_CPHA | SPI_WORD_SET(8), 0), \
 				),													\
@@ -342,10 +373,15 @@ static const struct sensor_driver_api tmc5160_api = {
 		COND_CODE_1(DT_INST_ON_BUS(inst, uart),						\
 			    (													\
 			     .uart_dev = DEVICE_DT_GET(DT_INST_BUS(inst)), 		\
-				 .cb = tmc_uart_cb_dma,									\
+				 .cb = tmc_uart_cb_dma,								\
 				),													\
 			    ())													\
 		.rotation_distance = DT_INST_PROP(inst, rotation_distance), \
+																	\
+		.step = PWM_DT_SPEC_INST_GET_BY_IDX(inst, 0),				\
+		.dir = GPIO_DT_SPEC_INST_GET_OR(inst, dir_gpios, 0),		\
+		.diag0_pin = GPIO_DT_SPEC_INST_GET_OR(inst, diag0_pin, 0),	\
+		.diag1_pin = GPIO_DT_SPEC_INST_GET_OR(inst, diag1_pin, 0),	\
 	};						\
 							\
 	DEVICE_DT_INST_DEFINE(inst, 						\

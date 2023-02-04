@@ -1,5 +1,8 @@
 menu "TRINAMIC drivers"
 
+config TMC_SD
+	bool "Use STEP/DIR mode"
+
 config TMC_SPI
 	bool "Use SPI"
 

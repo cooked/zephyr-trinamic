@@ -11,7 +11,7 @@
 #include "tmc_shell.h"
 
 extern bool toggle;
-//extern const struct device *tmc0;
+extern const struct device *tmc0;
 
 //extern struct field fields[];
 
@@ -65,7 +65,7 @@ static int cmd_tmc_dump(const struct shell *shell, size_t argc, char *argv[])
 {
 
     shell_fprintf(shell, SHELL_NORMAL, "TMC dump slave %d registers: \n", slave);
-	//tmc_dump(tmc0, slave);
+	tmc_dump(tmc0, slave);
 
 	return 0;
 }
@@ -81,17 +81,15 @@ static int cmd_tmc_run(const struct shell *shell, size_t argc, char *argv[])
 {
 	// TODO: add a second parameter for acceleration
 
-	int32_t rpm = (int32_t) strtol( argv[CMD_ARG_N+1], &argv[CMD_ARG_N+1], 10);
+	int32_t rpm = (int32_t) strtol( argv[3], &argv[3], 10);
 	int32_t acc = 0;
 
-	if(argc == CMD_ARG_N+2)
-		acc = (int32_t) strtol( argv[CMD_ARG_N+1], &argv[CMD_ARG_N+1], 10);
+	//if(argc == 4)
+	//	acc = (int32_t) strtol( argv[CMD_ARG_N+1], &argv[CMD_ARG_N+1], 10);
 
-	slave = (uint8_t) strtol(argv[CMD_ARG_N], &argv[CMD_ARG_N], 10);
+	tmc_run(tmc0, slave, rpm, acc);
 
-	//tmc_run(tmc0, slave, rpm, acc);
-
-	shell_fprintf(shell, SHELL_NORMAL, "Run motor at %d rpm\n", rpm);
+	shell_fprintf(shell, SHELL_NORMAL, "Run motor %d at %d rpm\n", slave, rpm);
 
     return 0;
 }
@@ -123,7 +121,7 @@ int cmd_tmc(const struct shell *shell, size_t argc, char *argv[])
 	} else if( strcmp(subcmd,"dump")==0 ) {
 		return cmd_tmc_dump(shell, argc, argv);
 
-	} /*else if( strcmp(subcmd,"get")==0 ) {
+	/*} else if( strcmp(subcmd,"get")==0 ) {
 		return cmd_tmc_get(shell, argc, argv);
 
 	} else if( strcmp(subcmd,"set")==0 ) {
@@ -131,11 +129,11 @@ int cmd_tmc(const struct shell *shell, size_t argc, char *argv[])
 
 	} else if( strcmp(subcmd,"cur")==0 ) {
 		return cmd_tmc_cur(shell, argc, argv);
-
+	*/
 	} else if( strcmp(subcmd,"run")==0 ) {
 		return cmd_tmc_run(shell, argc, argv);
 
-	}*/
+	}
 
     return -EINVAL;
 

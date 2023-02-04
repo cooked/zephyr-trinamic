@@ -1,0 +1,105 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+
+        // board_runner_args(jlink "--device=STM32L475VG" "--speed=4000")
+
+        // openocd
+        {
+            "name": "zephyr stm32f103rb",
+            "type": "cortex-debug",
+            "request": "launch",
+            "servertype": "openocd",
+            //"runToEntryPoint": "main",
+            "cwd": "${workspaceRoot}",
+            "executable": "build/zephyr/zephyr.elf",
+            "device": "stm32f103rb",
+            //"interface": "swd",
+            //"armToolchainPath": "${HOME}/zephyr-sdk-0.14.2/arm-zephyr-eabi/bin",
+		    //"armToolchainPath": "${env:GNUARMEMB_TOOLCHAIN_PATH}/bin",
+            "configFiles": [
+                 "zephyr/boards/arm/nucleo_f103rb/support/openocd.cfg"
+                    ]
+        },
+        {
+            "name": "zephyr STM32F446ZE",
+            "type": "cortex-debug",
+            "request": "launch",
+            "servertype": "openocd",
+            "runToEntryPoint": "main",
+            "cwd": "${workspaceRoot}",
+            "executable": "build/zephyr/zephyr.elf",
+            "device": "stm32f446ze",
+            //"interface": "swd",
+            //"armToolchainPath": "${HOME}/zephyr-sdk-0.14.2/arm-zephyr-eabi/bin",
+		    //"armToolchainPath": "${env:GNUARMEMB_TOOLCHAIN_PATH}/bin",
+            "configFiles": [
+                 "zephyr/boards/arm/nucleo_f446ze/support/openocd.cfg"
+                    ]
+        },
+
+        {
+            // build task before debugging
+			"preLaunchTask": "Build TMC UART sample",
+
+            "name": "TMC-UART",
+            "type": "cortex-debug",
+            "request": "launch",
+            "servertype": "openocd",
+            "runToEntryPoint": "main",
+            "cwd": "${workspaceRoot}",
+            "executable": "build/zephyr/zephyr.elf",
+            "device": "stm32f103rb",
+            //"interface": "swd",
+            //"armToolchainPath": "${HOME}/zephyr-sdk-0.14.2/arm-zephyr-eabi/bin",
+		    //"armToolchainPath": "${env:GNUARMEMB_TOOLCHAIN_PATH}/bin",
+            "configFiles": [
+                "zephyr/boards/arm/nucleo_f103rb/support/openocd.cfg"
+            ],
+
+            "showDevDebugOutput": "raw"
+        },
+
+        /*{
+			"name": "application-test thingy91",
+            // task to run for building
+			"preLaunchTask": "Build thingy91_nrf9160ns app",
+
+            "cwd": "${workspaceRoot}",
+			"executable": "application-test/build/zephyr/zephyr.elf",
+			"interface": "swd",
+			"request": "launch",
+			"type": "cortex-debug",
+			"servertype": "jlink",
+			"serverpath": "/opt/SEGGER/JLink/JLinkGDBServerCLExe",
+			"rtos": "Zephyr",
+			"device": "nRF9160_xxAA",
+			"boardId": "",
+			"runToEntryPoint": "main",
+            // TODO: no SVDs at that location
+			"svdFile": "${env:NCS_BASE}/modules/hal/nordic/nrfx/mdk/nrf9160.svd",
+			"showDevDebugOutput": "raw",
+			"showDevDebugTimestamps": true,
+			// "preLaunchCommands": [
+			// 	"file ${workspaceRoot}/nrf91_application/build/spm/zephyr/zephyr.elf",
+			// 	"load",
+			// 	"enable breakpoint",
+			// 	"monitor reset"
+			// ],
+			"rttConfig": {
+				"enabled": true,
+				"address": "auto",
+				"decoders": [
+					{
+						"label": "Segger RTT Logs",
+						"port": 0,
+						"type": "console"
+					}
+				]
+			}
+		},*/
+    ]
+}

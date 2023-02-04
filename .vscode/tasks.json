@@ -30,6 +30,18 @@
 		},
 
 		{
+			"label": "Build TMC SPI+SD sample",
+			"type": "shell",
+			"group": "build",
+			"command": "west",
+			"args": [
+				"build",
+				"-p", "always",
+				"-b", "nucleo_f103rb",
+				"${workspaceFolder}/samples/tmc-spi-sd"
+			]
+		},
+		{
 			"label": "Build TMC SPI sample",
 			"type": "shell",
 			"group": "build",

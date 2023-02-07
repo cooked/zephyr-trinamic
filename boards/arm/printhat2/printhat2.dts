@@ -5,17 +5,17 @@
 */
 
  /dts-v1/;
- #include <st/f4/stm32f401Xe.dtsi>
- #include <st/f4/stm32f401r(d-e)tx-pinctrl.dtsi>
+ #include <st/f4/stm32f401Xc.dtsi>
+ #include <st/f4/stm32f401r(b-c)tx-pinctrl.dtsi>
 
  / {
 	 model = "Wrecklab's printHAT v2 board";
 	 compatible = "wrecklab,printhat2";
 
 	 chosen {
-		 zephyr,console = &usart1;
-		 zephyr,shell-uart = &usart1;
-		 //zephyr,console = &cdc_acm_uart0;
+		 //zephyr,console = &usart1;
+		 //zephyr,shell-uart = &usart1;
+		 zephyr,console = &cdc_acm_uart0;
 		 //zephyr,shell-uart = &cdc_acm_uart0;
 		 zephyr,sram = &sram0;
 		 zephyr,flash = &flash0;
@@ -39,6 +39,10 @@
 		led_4:led_4 {
 			gpios = <&gpioc 4 GPIO_ACTIVE_LOW>;
 		};
+
+		gp4:gp4 {
+			gpios = <&gpioa 4 GPIO_ACTIVE_HIGH>;
+		};
 	 };
 
 	 aliases {
@@ -51,38 +55,36 @@
  };
 
  &clk_hse {
-	 //hse-bypass;
-	 clock-frequency = <DT_FREQ_M(8)>;
-	 status = "okay";
- };
+	clock-frequency = <DT_FREQ_M(8)>;
+	status = "okay";
+};
 
- &pll {
-	 div-m = <8>;
-	 mul-n = <336>;
-	 div-p = <4>;
-	 div-q = <7>;
-	 clocks = <&clk_hse>;
-	 status = "okay";
- };
+&pll {
+	div-m = <8>;
+	mul-n = <336>;
+	div-p = <4>;
+	div-q = <7>;
+	clocks = <&clk_hse>;
+	status = "okay";
+};
 
- &rcc {
-	 clocks = <&pll>;
-	 clock-frequency = <DT_FREQ_M(84)>;
-	 ahb-prescaler = <1>;
-	 apb1-prescaler = <2>;
-	 apb2-prescaler = <1>;
- };
+&rcc {
+	clocks = <&pll>;
+	clock-frequency = <DT_FREQ_M(84)>;
+	ahb-prescaler = <1>;
+	apb1-prescaler = <2>;
+	apb2-prescaler = <1>;
+};
 
- /*zephyr_udc0: &usbotg_fs {
-	pinctrl-0 = <&usb_otg_fs_dm_pa11 &usb_otg_fs_dp_pa12
-		&usb_otg_fs_id_pa10>;
+ zephyr_udc0: &usbotg_fs {
+	pinctrl-0 = <&usb_otg_fs_dm_pa11 &usb_otg_fs_dp_pa12>;
 	pinctrl-names = "default";
 	status = "okay";
 
 	cdc_acm_uart0: cdc_acm_uart0 {
 		compatible = "zephyr,cdc-acm-uart";
 	};
-};*/
+};
 
  // USART1 tx:PA9 rx:PA10 	--- to/from RPi
  // USART2 tx:PA2 rx:PA3 	--- UART1, mot X,Y,Z
@@ -102,25 +104,30 @@
 	pinctrl-names = "default";
 	current-speed = <115200>;
 
-	dmas = 	<&dma1 6 4 0x28440 0x03>,	// Stream 6, Channel 4, ...
+	/*dmas = 	<&dma1 6 4 0x28440 0x03>,	// Stream 6, Channel 4, ...
 			<&dma1 5 4 0x28480 0x03>;	// Stream 5, Channel 4, ...
 	dma-names = "tx", "rx";
+	*/
 
 	s1:tmc2209_1 {
 		compatible = "trinamic,tmc2209";
 		status = "okay";
 		slaveaddr = <0>;
+		en-gpios = <&gpiob 3 GPIO_ACTIVE_LOW>;
 	};
-	s2:tmc2209_2 {
+ 	s2:tmc2209_2 {
 		compatible = "trinamic,tmc2209";
 		status = "okay";
 		slaveaddr = <1>;
+		en-gpios = <&gpioa 13 GPIO_ACTIVE_LOW>;
 	};
 	s3:tmc2209_3 {
 		compatible = "trinamic,tmc2209";
 		status = "okay";
 		slaveaddr = <2>;
+		en-gpios = <&gpiob 9 GPIO_ACTIVE_LOW>;
 	};
+
  };
 
  &usart6 {
@@ -133,9 +140,10 @@
 
 	// see:
 	// https://docs.zephyrproject.org/latest/build/dts/api/bindings/dma/st%2Cstm32-dma-v1.html#st-stm32-dma-v1
-	dmas = 	<&dma2 6 5 0x28440 0x03>,	// Stream 6, Channel 5, ...
+	/*dmas = 	<&dma2 6 5 0x28440 0x03>,	// Stream 6, Channel 5, ...
 			<&dma2 1 5 0x28480 0x03>;	// Stream 1, Channel 5, ...
 	dma-names = "tx", "rx";
+	*/
 
 	/*tmc5160 {
 		compatible = "trinamic,tmc5160";
@@ -152,12 +160,12 @@
 
  // see
  // https://github.com/zephyrproject-rtos/zephyr/blob/db3f8c16e9c95801961a433c07f481bfcb385466/tests/drivers/uart/uart_async_api/boards/nucleo_f103rb.overlay
- &dma1 {
+ /*&dma1 {
 	status = "okay";
  };
  &dma2 {
 	status = "okay";
- };
+ };*/
 
 
  /*&timers2 {
@@ -169,7 +177,6 @@
 		pinctrl-names = "default";
 	};
  };*/
-
 
  /*&adc1 {
 	pinctrl-0 = <&adc1_in0_pa0>;

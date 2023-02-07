@@ -339,12 +339,10 @@ static int tmc5160_sample_fetch(const struct device *dev, enum sensor_channel ch
 static int tmc5160_channel_get(const struct device *dev, enum sensor_channel chan, struct sensor_value *val)
 {
 	//struct tmc5160_data *data = dev->data;
-
 	switch (chan) {
 	default:
 		return -EINVAL;
 	}
-
 	return 0;
 }
 static const struct sensor_driver_api tmc5160_api = {
@@ -378,7 +376,7 @@ static const struct sensor_driver_api tmc5160_api = {
 			    ())													\
 		.rotation_distance = DT_INST_PROP(inst, rotation_distance), \
 																	\
-		.step = PWM_DT_SPEC_INST_GET_BY_IDX(inst, 0),				\
+		.step = PWM_DT_SPEC_INST_GET_BY_IDX_OR(inst, 0, NULL),		\
 		.dir = GPIO_DT_SPEC_INST_GET_OR(inst, dir_gpios, 0),		\
 		.diag0_pin = GPIO_DT_SPEC_INST_GET_OR(inst, diag0_pin, 0),	\
 		.diag1_pin = GPIO_DT_SPEC_INST_GET_OR(inst, diag1_pin, 0),	\

@@ -4,13 +4,16 @@
 
 menuconfig TMC2209
 	bool "Enable support for the TMC2209 stepper driver"
+	default y
+	depends on DT_HAS_TRINAMIC_TMC2209_ENABLED
+	select HAS_TMCLIB
+	select SERIAL if $(dt_compat_on_bus,$(DT_COMPAT_TRINAMIC_TMC2209),uart)
+	select TMC_UART if $(dt_compat_on_bus,$(DT_COMPAT_TRINAMIC_TMC2209),uart)
 	help
 		Enable driver for TMC2209 stepper driver.
 
 if TMC2209
 
-config TMC2209_UART
-	bool "Use UART"
-	select SERIAL
+# TODO: add diag pin
 
 endif # TMC2209

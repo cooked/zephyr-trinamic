@@ -72,6 +72,7 @@ struct tmc_config {
 
     struct pwm_dt_spec step;
     struct gpio_dt_spec dir;
+	struct gpio_dt_spec en;
 
 	struct gpio_dt_spec diag0_pin;
 	struct gpio_dt_spec diag1_pin;

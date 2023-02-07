@@ -7,10 +7,11 @@
 #include <zephyr/device.h>
 #include <zephyr/drivers/gpio.h>
 
-#include "tmc_reg.h"
+#include <zephyr/usb/usb_device.h>
+
 #include "tmc2209.h"
 
-#define SLEEP_TIME_MS   1000
+#define SLEEP_TIME_MS   5000
 
 #define S1 DT_NODELABEL(s1)
 #define S2 DT_NODELABEL(s2)
@@ -34,11 +35,30 @@ struct gpio_dt_spec h2 = GPIO_DT_SPEC_GET(H2_NODE, gpios);
 struct gpio_dt_spec f0 = GPIO_DT_SPEC_GET(F0_NODE, gpios);
 struct gpio_dt_spec f1 = GPIO_DT_SPEC_GET(F1_NODE, gpios);
 
+struct gpio_dt_spec gpio4 = GPIO_DT_SPEC_GET( DT_NODELABEL(gp4), gpios );
+
 void main(void)
 {
+	const struct device *dev;
+	int ret;
+
+	dev = DEVICE_DT_GET_ONE(zephyr_cdc_acm_uart);
+	if (!device_is_ready(dev)) {
+		printk("CDC ACM device not ready");
+		return;
+	}
+
+	ret = usb_enable(NULL);
+	if (ret != 0) {
+		printk("Failed to enable USB");
+		return;
+	}
+
+
 	if( !device_is_ready(tmc1) ||
 		!device_is_ready(tmc2) ||
-		!device_is_ready(tmc3) ) {
+		!device_is_ready(tmc3)
+	) {
 		return;
 	}
 
@@ -52,14 +72,16 @@ void main(void)
 	gpio_pin_configure_dt(&f0, GPIO_OUTPUT_ACTIVE);
 	gpio_pin_configure_dt(&f1, GPIO_OUTPUT_ACTIVE);
 
+	gpio_pin_configure_dt(&gpio4, GPIO_OUTPUT_ACTIVE);
+
 	toggle = 0;
 
 	uint32_t count = 0, data;
-	uint8_t reg = TMC_GSTAT;
+	uint8_t reg = TMC2209_GSTAT;
 
 	while (1) {
 
-		printk(" Heeeellooo %d\n", toggle);
+		gpio_pin_set_dt(&gpio4, 1);
 
 		if(toggle) {
 			gpio_pin_toggle_dt(&h0);
@@ -70,10 +92,10 @@ void main(void)
 		}
 		toggle = !toggle;
 
-
-		tmc_reg_write(tmc1, reg, 1);
-		tmc_reg_read(tmc1, reg, &data);
+		tmc_reg_write(tmc1, 0, TMC2209_VACTUAL, 1);
+		tmc_reg_read(tmc1, 0, TMC2209_IFCNT, &data);
 		printk( "Count %u - Register value: 0x%08X \n", count, data);
+		//tmc_dump(tmc1, 0);
 
 		count++;
 

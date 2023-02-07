@@ -13,6 +13,11 @@ properties:
     description: |
       Dir pin
 
+  en-gpios:
+    type: phandle-array
+    description: |
+      Enable pin
+
   diag0-pin:
     type: phandles
     description: |

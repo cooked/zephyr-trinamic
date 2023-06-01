@@ -71,7 +71,7 @@ static int tmc5160_init(const struct device *dev)
 	res = gpio_pin_configure_dt(&cfg->dir, GPIO_OUTPUT);
 	if (res != 0) {
 		printk("Error %d: failed to configure dir pin\n", res);
-		return;
+		return res;
 	}
 
 #if CONFIG_TMC_SPI

@@ -76,15 +76,17 @@
 	apb2-prescaler = <1>;
 };
 
- zephyr_udc0: &usbotg_fs {
-	pinctrl-0 = <&usb_otg_fs_dm_pa11 &usb_otg_fs_dp_pa12>;
-	pinctrl-names = "default";
+&timers1 {
 	status = "okay";
-
-	cdc_acm_uart0: cdc_acm_uart0 {
-		compatible = "zephyr,cdc-acm-uart";
+	st,prescaler = <100>;
+	stepper0: pwm {
+		status = "okay";
+		pinctrl-0 = < &tim1_ch1_pwm_pa8 >;
+		pinctrl-names = "default";
 	};
 };
+
+
 
  // USART1 tx:PA9 rx:PA10 	--- to/from RPi
  // USART2 tx:PA2 rx:PA3 	--- UART1, mot X,Y,Z
@@ -109,23 +111,33 @@
 	dma-names = "tx", "rx";
 	*/
 
+	// TODO:
 	s1:tmc2209_1 {
 		compatible = "trinamic,tmc2209";
 		status = "okay";
 		slaveaddr = <0>;
 		en-gpios = <&gpiob 3 GPIO_ACTIVE_LOW>;
+		// step/dir
+		pwms = <&stepper0 1 10000 PWM_POLARITY_NORMAL>;
+		dir-gpios = <&gpioc 7 GPIO_ACTIVE_HIGH>;
 	};
  	s2:tmc2209_2 {
 		compatible = "trinamic,tmc2209";
 		status = "okay";
 		slaveaddr = <1>;
 		en-gpios = <&gpioa 13 GPIO_ACTIVE_LOW>;
+		// step/dir
+		pwms = <&stepper0 1 10000 PWM_POLARITY_NORMAL>;
+		dir-gpios = <&gpioc 7 GPIO_ACTIVE_HIGH>;
 	};
 	s3:tmc2209_3 {
 		compatible = "trinamic,tmc2209";
 		status = "okay";
 		slaveaddr = <2>;
 		en-gpios = <&gpiob 9 GPIO_ACTIVE_LOW>;
+		// step/dir
+		pwms = <&stepper0 1 10000 PWM_POLARITY_NORMAL>;
+		dir-gpios = <&gpioc 7 GPIO_ACTIVE_HIGH>;
 	};
 
  };
@@ -157,6 +169,16 @@
 
  };
 
+ zephyr_udc0: &usbotg_fs {
+	pinctrl-0 = <&usb_otg_fs_dm_pa11 &usb_otg_fs_dp_pa12>;
+	pinctrl-names = "default";
+	status = "okay";
+
+	cdc_acm_uart0: cdc_acm_uart0 {
+		compatible = "zephyr,cdc-acm-uart";
+	};
+};
+
 
  // see
  // https://github.com/zephyrproject-rtos/zephyr/blob/db3f8c16e9c95801961a433c07f481bfcb385466/tests/drivers/uart/uart_async_api/boards/nucleo_f103rb.overlay
@@ -165,17 +187,6 @@
  };
  &dma2 {
 	status = "okay";
- };*/
-
-
- /*&timers2 {
-	status = "okay";
-
-	pwm2: pwm {
-		status = "okay";
-		pinctrl-0 = <&tim2_ch1_pa5>;
-		pinctrl-names = "default";
-	};
  };*/
 
  /*&adc1 {

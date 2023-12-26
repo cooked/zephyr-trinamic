@@ -3,8 +3,7 @@ build
 bootloader
 tools
 modules
-.west/
-./zephyr/*
-!./zephyr/module.yml
+zephyr
+.west
 .vscode/.cortex-debug.registers.state.json
 .vscode/*.log

@@ -4,6 +4,7 @@ bootloader
 tools
 modules
 .west/
-./zephyr
+./zephyr/*
+!./zephyr/module.yml
 .vscode/.cortex-debug.registers.state.json
 .vscode/*.log

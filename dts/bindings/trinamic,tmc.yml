@@ -35,13 +35,13 @@ properties:
   current-run:
     type: int
     description: |
-      Operating current [mA]
-    default: 1000
+      Operating current [1-32]
+    default: 10
   current-hold:
     type: int
     description: |
-      Holding current [mA]
-    default: 200
+      Holding current [1-32]
+    default: 5
 
   rotation-distance:
     type: int

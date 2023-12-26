@@ -68,11 +68,13 @@ static int tmc5160_init(const struct device *dev)
 
 	LOG_DBG("TMC5160 INIT");
 
+#if CONFIG_TMC_SD
 	res = gpio_pin_configure_dt(&cfg->dir, GPIO_OUTPUT);
 	if (res != 0) {
 		printk("Error %d: failed to configure dir pin\n", res);
 		return res;
 	}
+#endif
 
 #if CONFIG_TMC_SPI
 	if (!spi_is_ready(&cfg->spi)) {
@@ -162,7 +164,6 @@ int tmc_init(const struct device *dev, uint8_t slave) {
 	// clear errors
 	tmc_reg_write(dev, slave, TMC5160_GSTAT, 		0x7	);
 
-#if CONFIG_TMC_SD
 	// see DS pag. 116 Getting Started
 	tmc_reg_write(dev, slave, TMC5160_CHOPCONF, 	0x000100C3	); // CHOPCONF: TOFF=3, HSTRT=4, HEND=1, TBL=2, CHM=0 (SpreadCycle)
 	tmc_set_irun_ihold(dev, slave, cfg->run_current, cfg->hold_current); // write only
@@ -170,9 +171,8 @@ int tmc_init(const struct device *dev, uint8_t slave) {
 	tmc_reg_write(dev, slave, TMC5160_GCONF, 		0x00000004); // EN_PWM_MODE=1 enables StealthChop (with default PWM_CONF)
 	tmc_reg_write(dev, slave, TMC5160_TPWMTHRS, 	0x000001F4); // TPWM_THRS=500 yields a switching velocity about 35000 = ca. 30RPM
 
-#else
-	// see DS pag. 116 Getting Started
-	tmc_set_irun_ihold(dev, slave, cfg->run_current, cfg->hold_current); // write only
+#if !CONFIG_TMC_SD
+
 	// prevent motion
 	tmc_reg_write(dev, slave, TMC5160_XTARGET,		0);
 	tmc_reg_write(dev, slave, TMC5160_XACTUAL,		0);
@@ -217,17 +217,18 @@ void tmc_run(const struct device *dev, uint8_t slave, int32_t speed, int32_t acc
 	}
 
 	// VMAX velocity value in velocity mode (DS pag. 40)
-	tmc_reg_write(dev, slave, TMC5160_VMAX, (uint32_t)((float)speed * RPM_TO_PPS / TMC_T) );
-
 	// direction
 	if(speed>0) {
 		// + velocity mode
+		tmc_reg_write(dev, slave, TMC5160_VMAX, (uint32_t)((float)speed * RPM_TO_PPS / TMC_T) );
 		tmc_reg_write(dev, slave, TMC5160_RAMPMODE, 1);
 	} else if(speed<0) {
 		// - velocity mode
+		tmc_reg_write(dev, slave, TMC5160_VMAX, (uint32_t)((float)-speed * RPM_TO_PPS / TMC_T) );
 		tmc_reg_write(dev, slave, TMC5160_RAMPMODE, 2);
 	} else {
 		// keep existing ramp_mode, but stop motion (speed=0)
+		tmc_reg_write(dev, slave, TMC5160_VMAX, 0 );
 	}
 
 #endif

@@ -5,6 +5,6 @@ Zephyr OS support for Trinamic TMC drivers
 
 ```
 cd <repo root>
-west init -l manifest
+west init
 west update
 ```

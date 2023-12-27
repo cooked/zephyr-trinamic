@@ -1,4 +1,7 @@
 build
-
+modules
+tools
+rtos
+.west
 .vscode/.cortex-debug.registers.state.json
 .vscode/*.log

@@ -13,6 +13,7 @@ manifest:
     - name: zephyr
       remote: zephyr
       revision: main
+      path: rtos
       import:
         name-allowlist:
           - cmsis

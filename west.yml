@@ -5,6 +5,9 @@
 
 manifest:
 
+  self:
+    path: zephyr-trinamic
+
   remotes:
     - name: zephyr
       url-base: https://github.com/zephyrproject-rtos
@@ -15,7 +18,7 @@ manifest:
     - name: zephyr
       remote: zephyr
       repo-path: zephyr
-      revision: v3.2.0
+      revision: main
       import:
         name-allowlist:
           - cmsis

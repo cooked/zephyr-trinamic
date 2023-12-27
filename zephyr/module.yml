@@ -1,6 +1,6 @@
 build:
-  cmake: drivers
-  kconfig: drivers/Kconfig
+  cmake: .
+  kconfig: Kconfig
   settings:
     dts_root: .
     board_root: .

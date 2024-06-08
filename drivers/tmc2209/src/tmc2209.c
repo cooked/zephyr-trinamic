@@ -52,6 +52,7 @@ static int tmc2209_init(const struct device *dev) {
 	// disable stepper
 	//gpio_pin_configure_dt(&cfg->en, GPIO_OUTPUT_INACTIVE);
 	gpio_pin_configure_dt(&cfg->en, GPIO_OUTPUT_ACTIVE);
+	gpio_pin_configure_dt(&cfg->dir, GPIO_OUTPUT_ACTIVE);
 
 	LOG_DBG("tmc2209_init done");
 

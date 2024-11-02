@@ -2,15 +2,6 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-# Add the driver directory as a zephyr module by hand
-list(APPEND ZEPHYR_EXTRA_MODULES
-	${CMAKE_CURRENT_SOURCE_DIR}/../../drivers
-)
-
-list(APPEND OVERLAY_CONFIG
-#	${CMAKE_CURRENT_SOURCE_DIR}/../../drivers/tmc5160/tmc5160-spi.conf
-)
-
 cmake_minimum_required(VERSION 3.20.0)
 
 # required for apps
